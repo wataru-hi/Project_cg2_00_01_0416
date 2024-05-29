@@ -37,9 +37,9 @@ struct vector4
 
 struct Transform
 {
-	Vector3 scale; 
-	Vector3 rotate; 
-	Vector3 translate; 
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
 };
 
 
@@ -173,7 +173,7 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 	D3D12_RESOURCE_DESC vertexResourceDesc{};
 	//バッファリソース。手くすりゃの場合は別の設定
 	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	vertexResourceDesc.Width =  sizeInBytes;//リソースのサイズ。今回はVector4を三頂点分
+	vertexResourceDesc.Width = sizeInBytes;//リソースのサイズ。今回はVector4を三頂点分
 	//バッファの場合はこれらを1にする決まり
 	vertexResourceDesc.Height = 1;
 	vertexResourceDesc.DepthOrArraySize = 1;
@@ -412,10 +412,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//２つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
-	//描画用のDescriptorHeapの設定
-	ID3D12DescriptorHeap* descriptoHeaps[] = {srvDescriptorHeap};
-	commandList->SetDescriptorHeaps(1, descriptoHeaps);
-
 	//初期値0でFenceを作る
 	ID3D12Fence* fence = nullptr;
 	uint64_t fenceValue = 0;
@@ -592,6 +588,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device,
 		swapChainDesc.BufferCount,
 		rtvDesc.Format,
@@ -629,6 +626,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//*wvpData = worldMatrix;
 
+						//ImGuiの内部コマンドを生成する
+			ImGui::Render();
+
 			//これから書き込むバッファのインデックスを取得する
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
@@ -640,11 +640,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 			//バリアを張る対象のリソース。現在のバックバッファに対して行う
 			barrier.Transition.pResource = swapChainResources[backBufferIndex];
+
 			//偏移前(現在)のResourceState
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-			
-			//実際のcommandListのImGuiの描画コマンドを積む
-			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 			//偏移後のResourceState
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -669,15 +667,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//マテリアルｃBufferの設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			
+
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
-			//ImGuiの内部コマンドを生成する
-			ImGui::Render();
+			//描画用のDescriptorHeapの設定
+			ID3D12DescriptorHeap* descriptoHeaps[] = { srvDescriptorHeap };
+			commandList->SetDescriptorHeaps(1, descriptoHeaps);
+
 
 			//描画!　(DrawCall/ドローコール)。3頂点のインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(3, 1, 0, 0);
+
+			//実際のcommandListのImGuiの描画コマンドを積む
+			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 			//画面に描く処理はすべて終わり、画面に移すので、状態を遷移
 			//今回はRenderTargetからPresentにする
@@ -720,6 +723,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	}
 
+
+	//ImGuiの終了処理
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello.DirectX!\n");
 
@@ -737,7 +746,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->Release();
 	UseAdapter->Release();
 	dxgiFactory->Release();
-	
+
 
 
 	vertexResource->Release();
@@ -751,11 +760,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rootSignature->Release();
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
-
-	//ImGuiの終了処理
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
 
 #ifdef _DEBUG
 	debugContoroller->Release();
