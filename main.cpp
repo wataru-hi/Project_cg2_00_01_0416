@@ -205,9 +205,40 @@ ID3D12DescriptorHeap* createDescriptorHeap(
 	return descriptorHeap;
 }
 
+vector4 vector4Input(float date1[4])
+{
+	vector4 result = {0.0f};
+
+	result.x = date1[0];
+	result.y = date1[1];
+	result.z = date1[2];
+	result.w = date1[3];
+
+	return result;
+}
+
+Vector3 vector3Input(float date1[3])
+{
+	Vector3 result = {0.0f};
+
+	result.x = date1[0];
+	result.y = date1[1];
+	result.z = date1[2];
+
+	return result;
+}
+
+
 // Windowsアプリのエントリーぽイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+
+	///=====================
+	///=====================
+
+	float color[4] = {1.0f,0.0f,0.0f,1.0f};
+	///=====================
+	///=====================
 
 	WNDCLASS wc{};
 	//ウィンドウプロシージャ
@@ -612,10 +643,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ImGui::NewFrame();
 
 
-			transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;
 
 			//開発用UIの処理。実際に開発用UIを出す場合はここをゲーム固有の処理に置き換えて作る
-			ImGui::ShowDemoWindow();
+			//ImGui::ShowDemoWindow();
+			ImGui::SliderFloat4("Color", color, 0.0f, 1.0f);
+			*materialDate = vector4Input(color);
+
 
 			Matrix4x4 worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAfineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -626,7 +660,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//*wvpData = worldMatrix;
 
-						//ImGuiの内部コマンドを生成する
+			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
 			//これから書き込むバッファのインデックスを取得する
