@@ -78,4 +78,7 @@
       <Filter>imgui</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="object3d.hlsli" />
+  </ItemGroup>
 </Project>
