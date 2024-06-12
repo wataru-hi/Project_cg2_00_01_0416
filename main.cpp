@@ -8,10 +8,10 @@
 #include <cassert>
 
 #include <dxgidebug.h>
+#include <vector>
 
 #include <dxcapi.h>
 #include "Mymath.h"
-#include "externals/DirectXTex/DirectXTex.h"
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -22,6 +22,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
+
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
 
 struct Vector2
 {
@@ -244,11 +247,14 @@ ID3D12Resource* CreateTextureResouce(ID3D12Device* device, const DirectX::TexMet
 	resourceDesc.SampleDesc.Count = 1;//サンプリングカウント
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);//Textureの次元数。普段は2次元
 
-	//利用するHeapの設定。非常に特殊
+	////利用するHeapの設定。非常に特殊
+	//D3D12_HEAP_PROPERTIES heapProperties{};
+	//heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
+	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでCPUアクセス可能
+	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
+
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでCPUアクセス可能
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
 	//Resouceの生成
 	ID3D12Resource* resouce = nullptr;
@@ -256,32 +262,54 @@ ID3D12Resource* CreateTextureResouce(ID3D12Device* device, const DirectX::TexMet
 		&heapProperties,//Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定
 		&resourceDesc,//Resourceの設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,//作成するResourceのポインタへのポインタ
+		D3D12_RESOURCE_STATE_COPY_DEST,//作成するResourceのポインタへのポインタ
 		nullptr,//Clearの最高値。使わないのでnullptr
 		IID_PPV_ARGS(&resouce));
 	assert(SUCCEEDED(hr));
 	return resouce;
 }
+//
+//void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+//{
+//	//Meta情報を取得
+//	const DirectX::TexMetadata& metaData = mipImages.GetMetadata();
+//	//全Mipmapについて
+//	for (size_t mipLevel = 0; mipLevel < metaData.mipLevels; ++mipLevel)
+//	{
+//		//MipMaplevelを指定して各Imageを取得
+//		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+//		//Textureに転送
+//		HRESULT hr = texture->WriteToSubresource(
+//			UINT(mipLevel),
+//			nullptr,//全領域へのコピー
+//			img->pixels,//元データアクセス
+//			UINT(img->rowPitch),//1ラインサイズ
+//			UINT(img->slicePitch)//1枚サイズ
+//		);
+//		assert(SUCCEEDED(hr));
+//	}
+//
+//}
 
-void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+[[nodiscard]]
+ID3D12Resource* uploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device, 
+	ID3D12GraphicsCommandList* commandList)
 {
-	//Meta情報を取得
-	const DirectX::TexMetadata& metaData = mipImages.GetMetadata();
-	//全Mipmapについて
-	for (size_t mipLevel = 0; mipLevel < metaData.mipLevels; ++mipLevel)
-	{
-		//MipMaplevelを指定して各Imageを取得
-		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0,0);
-		//Textureに転送
-		HRESULT hr = texture->WriteToSubresource(
-			UINT(mipLevel),
-			nullptr,//全領域へのコピー
-			img->pixels,//元データアクセス
-			UINT(img->rowPitch),//1ラインサイズ
-			UINT(img->slicePitch)//1枚サイズ
-		);
-		assert(SUCCEEDED(hr));
-	}
+	std::vector<D3D12_SUBRESOURCE_DATA> subresoruces;
+	DirectX::PrepareUpload(device, mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresoruces);
+	uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, UINT(subresoruces.size()));
+	ID3D12Resource* intermediateResource = CreateBufferResource(device, intermediateSize);
+	UpdateSubresources(commandList, texture, intermediateResource, 0, 0, UINT(subresoruces.size()), subresoruces.data());
+	//Textureへの転送後は利用できるよう、D3D12＿RESOUCE_STATE_COPY_DESTからD3D12＿RESOUCE_STATE_GENERIC＿READへResouceStateを変更する
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = texture;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier(1, &barrier);
+	return intermediateResource;
 }
 
 // Windowsアプリのエントリーポイント
@@ -673,7 +701,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
 	ID3D12Resource* textureResource = CreateTextureResouce(device, metadata);
-	UploadTextureData(textureResource, mipImages);
+	ID3D12Resource* intermediteDate = uploadTextureData(textureResource, mipImages, device, commandList);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -906,6 +934,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexShaderBlob->Release();
 	
 	textureResource->Release();
+	intermediteDate->Release();
 
 #ifdef _DEBUG
 	debugContoroller->Release();
