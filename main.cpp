@@ -259,7 +259,7 @@ ID3D12Resource* CreateTextureResouce(ID3D12Device* device, const DirectX::TexMet
 		&heapProperties,//Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定
 		&resourceDesc,//Resourceの設定
-		D3D12_RESOURCE_STATE_COPY_DEST,//データ転送される設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,//データ転送される設定
 		nullptr,//Clearの最高値。使わないのでnullptr
 		IID_PPV_ARGS(&resouce));
 	assert(SUCCEEDED(hr));
@@ -289,25 +289,74 @@ ID3D12Resource* UploadTextureData(ID3D12Resource* texture, const DirectX::Scratc
 
 ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height)
 {
-	//生成するResoruceの設定
+	////生成するResoruceの設定
+	//D3D12_RESOURCE_DESC resourceDesc{};
+	//resourceDesc.Width = width;//textureの幅
+	//resourceDesc.Height = height;//textureの高さ
+	//resourceDesc.MipLevels = 1;//mipmapの数
+	//resourceDesc.DepthOrArraySize = 1;//奥行き　or　配列Textureの配列
+	//resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
+	//resourceDesc.SampleDesc.Count = 1;
+	//resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //2次元
+	//resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//Depthstencilとして使う通知
+
+	////利用するHeapの設定
+	//D3D12_HEAP_PROPERTIES heapProperties{};
+	//heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM状に作る
+
+	// 生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = width;//textureの幅
-	resourceDesc.Height = height;//textureの高さ
-	resourceDesc.MipLevels = 1;//mipmapの数
-	resourceDesc.DepthOrArraySize = 1;//奥行き　or　配列Textureの配列
-	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
-	resourceDesc.SampleDesc.Count = 1;
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //2次元
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//Depthstencilとして使う通知
+	resourceDesc.Width = width; // Textureの幅
+	resourceDesc.Height = height; // Textureの高さ
+	resourceDesc.MipLevels = 1; // mipmapの数
+	resourceDesc.DepthOrArraySize = 1; // 奥行き or 配列Textureの配列数
+	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // DepthStencilとして利用可能なフォーマット
+	resourceDesc.SampleDesc.Count = 1; // サンプリングカウント、1固定。
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 2次元
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; // DepthStencilとして使う通知
 
-	//利用するHeapの設定
+	// 利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM状に作る
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM上に作る
 
-	//深度地のクリア設定
-	D3D12_CLEAR_VALUE dethClearValue{};
-	dethClearValue.DepthStencil.Depth = 1.0f;// 1.0f(最大値)でクリア
-	dethClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	////深度地のクリア設定
+	//D3D12_CLEAR_VALUE dethClearValue{};
+	//dethClearValue.DepthStencil.Depth = 1.0f;// 1.0f(最大値)でクリア
+	//dethClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	// 深度値のクリア設定
+	D3D12_CLEAR_VALUE depthClearValue{};
+	depthClearValue.DepthStencil.Depth = 1.0f; // 1.0f (最大値) でクリア
+	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // フォーマット。Resourceと合わせる
+
+
+	////Resouceの生成
+	//ID3D12Resource* resouce = nullptr;
+	//HRESULT hr = device->CreateCommittedResource(
+	//	&heapProperties,//Heapの設定
+	//	D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定
+	//	&resourceDesc,//Resourceの設定
+	//	D3D12_RESOURCE_STATE_DEPTH_WRITE,//データ転送される設定
+	//	&depthClearValue,//Clearの最高値。使わないのでnullptr
+	//	IID_PPV_ARGS(&resouce));
+	//assert(SUCCEEDED(hr));
+
+	// Resourceの生成
+	ID3D12Resource* resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties, // Heapの設定
+		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
+		&resourceDesc, // Resourceの設定
+		D3D12_RESOURCE_STATE_DEPTH_WRITE, // 深度値を書き込む状態にしておく
+		&depthClearValue, // Clear最適値
+		IID_PPV_ARGS(&resource) // 作成するResourceポインタへのポインタ
+	);
+
+	assert(SUCCEEDED(hr));
+
+
+	return resource;
 }
 
 // Windowsアプリのエントリーポイント
@@ -516,6 +565,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
+	
+		
+	//=================
+	//DethstencilTextureをウィンドウサイズで生成
+	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device,kClientHeight, kClientHeight);
+	//=================
+	
 
 	//FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -560,7 +616,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	descripionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descripionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
-	//=================
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;//バイタリニアフィルタ
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//０～１の範囲外をリピート
@@ -572,7 +627,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixcelShaderで使う
 	descripionRootSignature.pStaticSamplers = staticSamplers;
 	descripionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-	//=================
 
 	//シリアライズしてバイナリにする
 	ID3DBlob* signatureBlod = nullptr;
@@ -851,11 +905,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ID3D12DescriptorHeap* descriptoHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptoHeaps);
 
-			//======================
-			
 			//SRVのDescriptorTableの先頭を設定。2はrootParameter[2］である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); 
-			//======================
 
 			//描画!　(DrawCall/ドローコール)。3頂点のインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(6, 1, 0, 0);
@@ -927,6 +978,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->Release();
 	UseAdapter->Release();
 	dxgiFactory->Release();
+
+	depthStencilResource->Release();
 
 
 
