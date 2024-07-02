@@ -700,6 +700,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	assert(SUCCEEDED(hr));
 	
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
@@ -741,6 +742,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//右下
 	vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
 	vertexData[5].texcood = { 1.0f, 1.0f };
+
+	//頂点バッファビューを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	//リソースの先頭のアドレスから使う
+	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	//使用するリソースサイズは頂点3つ分のサイズ
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	//1頂点当たりのサイズ
+	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+
+	vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
+	vertexDataSprite[0].texcood = { 0.0f, 1.0f};
+	vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
+	vertexDataSprite[1].texcood = { 0.0f, 0.0f};
+	vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
+	vertexDataSprite[2].texcood = { 1.0f, 1.0f};
+
+	vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 右下
+	vertexDataSprite[3].texcood = { 0.0f, 0.0f};
+	vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f }; // 左上
+	vertexDataSprite[4].texcood = { 1.0f, 0.0f};
+	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右上
+	vertexDataSprite[5].texcood = { 1.0f, 1.0f};
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
