@@ -945,7 +945,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Matrix4x4 worldMatirxSprite = MakeAfineMatrix(cameraTransformSprite.scale, cameraTransformSprite.rotate, cameraTransformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionmatrixSprite = makeOrthogphicMatrix(0.0f, 0.0f, float())
-				Multiply(worldMatirxSprite, Multiply(worldMatirxSprite, worldMatirxSprite));
+			Multiply(worldMatirxSprite, Multiply(worldMatirxSprite, worldMatirxSprite));
 
 
 			// 4x4配列の要素を表示
