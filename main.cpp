@@ -899,6 +899,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 10.0f} };
 	Transform cameraTransformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
+		Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+
+	float GuiTransform[3][3];
+
+
 	//ImGuiの初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -974,11 +979,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Matrix4x4 worldViewProjectionmatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*wvpData = worldViewProjectionmatrix;//cg0202_23
 
-			/*Matrix4x4 worldMatirxSprite = MakeAfineMatrix(cameraTransformSprite.scale, cameraTransformSprite.rotate, cameraTransformSprite.translate);
+			Matrix4x4 worldMatirxSprite = MakeAfineMatrix(cameraTransformSprite.scale, cameraTransformSprite.rotate, cameraTransformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionmatrixSprite = makeOrthogphicMatrix(0.0f, 0.0f, float(kClientWidth), kClientHeight, 0.0f, 100.0f);
+			Matrix4x4 projectionmatrixSprite = makeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), kClientHeight, 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatirxSprite, Multiply(worldMatirxSprite, worldMatirxSprite));
-			*transformationMatrixDataSprite = worldViewProjectionmatrix;*/
+			*transformationMatrixDataSprite = worldViewProjectionmatrix;
 
 
 			// 4x4配列の要素を表示
