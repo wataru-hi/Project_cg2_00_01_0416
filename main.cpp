@@ -935,42 +935,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ImGui::NewFrame();
 
 
-			//transform.rotate.y += 0.03f;
+			transform.rotate.y += 0.03f;
 
 			//開発用UIの処理。実際に開発用UIを出す場合はここをゲーム固有の処理に置き換えて作る
 			//ImGui::ShowDemoWindow();
+
+			
 			// X、Y、Zの位置をスライダーで変更
 			ImGui::SliderFloat("X Position", &transform.translate.x, -10.0f, 10.0f);
 			ImGui::SliderFloat("Y Position", &transform.translate.y, -10.0f, 10.0f);
 			ImGui::DragFloat("Z Position", &transform.translate.z, 0.1f, 1.0f);
-
-			GuiTransform[0][0] = transformSprite.scale.x;
-			GuiTransform[0][1] = transformSprite.scale.y;
-			GuiTransform[0][2] = transformSprite.scale.z;
-
-			GuiTransform[1][0] = transformSprite.rotate.x;
-			GuiTransform[1][1] = transformSprite.rotate.y;
-			GuiTransform[1][2] = transformSprite.rotate.z;
-
-			GuiTransform[2][0] = transformSprite.translate.x;
-			GuiTransform[2][1] = transformSprite.translate.y;
-			GuiTransform[2][2] = transformSprite.translate.z;
-
-			ImGui::DragFloat3("spriteScale", GuiTransform[0], 0.1f, 1.0f);
-			ImGui::DragFloat3("spriterotate", GuiTransform[1], 0.1f, 1.0f);
-			ImGui::DragFloat3("spriteTrans", GuiTransform[2], 0.1f, 1.0f);
-
-			transformSprite.scale.x = GuiTransform[0][0];
-			transformSprite.scale.y = GuiTransform[0][1];
-			transformSprite.scale.z = GuiTransform[0][2];
-
-			transformSprite.rotate.x = GuiTransform[1][0];
-			transformSprite.rotate.y = GuiTransform[1][1];
-			transformSprite.rotate.z = GuiTransform[1][2];
-
-			transformSprite.translate.x = GuiTransform[2][0];
-			transformSprite.translate.y = GuiTransform[2][1];
-			transformSprite.translate.z = GuiTransform[2][2];
 
 			Matrix4x4 worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAfineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -981,9 +955,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			Matrix4x4 worldMatirxSprite = MakeAfineMatrix(cameraTransformSprite.scale, cameraTransformSprite.rotate, cameraTransformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionmatrixSprite = makeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), kClientHeight, 0.0f, 100.0f);
+			Matrix4x4 projectionmatrixSprite = makeOrthogphicMatrix(0.0f, 0.0f, float(kClientWidth), kClientHeight, 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatirxSprite, Multiply(worldMatirxSprite, worldMatirxSprite));
 			*transformationMatrixDataSprite = worldViewProjectionmatrix;
+
+
+			// 4x4配列の要素を表示
+			for (int row = 0; row < 4; ++row)
+			{
+				for (int col = 0; col < 4; ++col)
+				{
+					ImGui::Text("M[%d][%d]: %f", row, col, worldViewProjectionmatrix.m[row][col]);
+				}
+			}
+
+
 
 
 			// 4x4配列の要素を表示
@@ -1039,11 +1025,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
+
 			//形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			//マテリアルｃBufferの設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+
+			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
@@ -1060,12 +1050,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//描画!　(DrawCall/ドローコール)。3頂点のインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(6, 1, 0, 0);
-
-			
-			//Spriteの描画
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(6,1,0,0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1135,9 +1119,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->Release();
 	UseAdapter->Release();
 	dxgiFactory->Release();
-
-	vertexResourceSprite->Release();
-	transformationMatrixResourceSprite->Release();
 
 	depthStencilResouce->Release();
 

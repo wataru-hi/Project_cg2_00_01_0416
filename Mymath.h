@@ -328,34 +328,26 @@ Matrix4x4 makePerspectiveMatrix(const float fovY, const float aspectRatio, const
 
 
 
-//Matrix4x4 makeOrthogphicMatrix(const float& left, const float& top, const float& right, const float& bottom, const float& nearClip, const float& farClip)
-//{
-//	Matrix4x4 result = { 0 };
-//	result.m[0][0] = 2.0f / (right - left);
-//	result.m[1][1] = 2.0f / (top - bottom);
-//	result.m[2][2] = 1.0f / (farClip - nearClip);
-//	result.m[3][0] = (left + right) / (left - right);
-//	result.m[3][1] = (top + bottom) / (bottom - top);
-//	result.m[3][2] = nearClip / (nearClip - farClip);
-//	result.m[3][3] = 1.0f;
-//	return result;
-//}
-
-Matrix4x4 makeOrthographicMatrix(const float& left, const float& top, const float& right, const float& bottom, const float& nearClip, const float& farClip)
+Matrix4x4 makeOrthogphicMatrix(const float& left, const float& top, const float& right, const float& bottom, const float& nearClip, const float& farClip)
 {
-    Matrix4x4 result;
+	Matrix4x4 result = { 0 };
 
-    result.m[0][0] = 2.0f / (right - left);
-    result.m[1][1] = 2.0f / (top - bottom);
-    result.m[2][2] = 1.0f / (farClip - nearClip);
-    result.m[3][0] = (left + right) / (left - right);
-    result.m[3][1] = (top + bottom) / (bottom - top);
-    result.m[3][2] = nearClip / (nearClip - farClip);
-    result.m[3][3] = 1.0f;
+	result.m[0][0] = 2.0f / (right - left);
 
-    return result;
+	result.m[1][1] = 2.0f / (top - bottom);
+
+	result.m[2][2] = 1.0f / (farClip - nearClip);
+
+	result.m[3][0] = (left + right) / (left - right);
+
+	result.m[3][1] = (top + bottom) / (bottom - top);
+
+	result.m[3][2] = nearClip / (nearClip - farClip);
+
+	result.m[3][3] = 1.0f;
+
+	return result;
 }
-
 
 Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& width, const float& height, const float& minDepth, const float& maxDepth)
 {
@@ -377,4 +369,3 @@ Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& w
 
 	return result;
 }
-
