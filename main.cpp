@@ -833,7 +833,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 10.0f} };
-	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 10.0f} };
+	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+
+	float TransformUi[3][3];
 
 	//ImGuiの初期化
 	IMGUI_CHECKVERSION();
@@ -868,14 +870,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			transform.rotate.y += 0.03f;
 
-			//開発用UIの処理。実際に開発用UIを出す場合はここをゲーム固有の処理に置き換えて作る
-			//ImGui::ShowDemoWindow();
+			TransformUi[0][0] = transformSprite.scale.x;
+			TransformUi[0][1] = transformSprite.scale.y;
+			TransformUi[0][2] = transformSprite.scale.z;
 
+			TransformUi[1][0] = transformSprite.rotate.x;
+			TransformUi[1][1] = transformSprite.rotate.y;
+			TransformUi[1][2] = transformSprite.rotate.z;
+
+			TransformUi[2][0] = transformSprite.translate.x;
+			TransformUi[2][1] = transformSprite.translate.y;
+			TransformUi[2][2] = transformSprite.translate.z;
 			
 			// X、Y、Zの位置をスライダーで変更
 			ImGui::SliderFloat("X Position", &transform.translate.x, -10.0f, 10.0f);
 			ImGui::SliderFloat("Y Position", &transform.translate.y, -10.0f, 10.0f);
 			ImGui::DragFloat("Z Position", &transform.translate.z, 0.1f, 1.0f);
+
+			ImGui::DragFloat3("spriteS", TransformUi[0], 0.1f, 1.0f);
+			ImGui::DragFloat3("spriteR", TransformUi[1], 0.1f, 1.0f);
+			ImGui::DragFloat3("spriteT", TransformUi[2], 0.1f, 1.0f);
+
+			transformSprite.scale.x = TransformUi[0][0];
+			transformSprite.scale.y = TransformUi[0][1];
+			transformSprite.scale.z = TransformUi[0][2];
+
+			transformSprite.rotate.x = TransformUi[1][0];
+			transformSprite.rotate.y = TransformUi[1][1];
+			transformSprite.rotate.z = TransformUi[1][2];
+
+			transformSprite.translate.x = TransformUi[2][0];
+			transformSprite.translate.y = TransformUi[2][1];
+			transformSprite.translate.z = TransformUi[2][2];
 
 			Matrix4x4 worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAfineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -886,7 +912,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			Matrix4x4 worldMatrixSprite = MakeAfineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = makePerspectiveMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 projectionMatrixSprite = makeOrthogphicMatrix(0.0f,0.0f, float(kClientWidth) , float(kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionmatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			*transfromationMatrixDataSprite = worldViewProjectionmatrixSprite;
 
@@ -941,15 +967,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);//PS0を設定
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 
 			//形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			//マテリアルｃBufferの設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-
-			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
@@ -964,7 +987,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); 
 			//======================
 
-			//描画!　(DrawCall/ドローコール)。3頂点のインスタンス。インスタンスについては今後
+			commandList->DrawInstanced(6, 1, 0, 0);
+			
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			commandList->DrawInstanced(6, 1, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
