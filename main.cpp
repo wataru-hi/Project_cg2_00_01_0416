@@ -701,7 +701,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	int vertexCount = 1536;
+
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
@@ -717,7 +719,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -747,61 +749,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 緯度方向の分割数
 	const int kSubdivision = 16;
 	// 経度分割1つ分の角度
-	const float kLonEvery = M_PI * 2.0f / float(kSubdivision);
+	const float kPhaiEvery = M_PI * 2.0f / float(kSubdivision);
 	// 緯度分割1つ分の角度
-	const float kLatEvery = M_PI / float(kSubdivision);
+	const float kShitaEvery = M_PI / float(kSubdivision);
 	// 緯度の方向に分割
 	for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -M_PI / 2.0f + kLatEvery * latIndex;
+		float shita = -M_PI / 2.0f + kShitaEvery * latIndex;//θ
 
 		// 経度の方向に分割しながら線を描く
 		for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
 			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;
+			float phai = lonIndex * kPhaiEvery;//φ
 
-			float u = float(lonIndex / kSubdivision);
-			float v = 1.0f - float(latIndex / kSubdivision);
+			/*float u = float(lonIndex / kSubdivision);
+			float v = 1.0f - float(latIndex / kSubdivision);*/
+
+			float u = float(lonIndex) / float(kSubdivision);
+			float v = 1.0f - float(latIndex) / float(kSubdivision);
 
 			// 原点aにデータを入力する
-			vertexData[start].position.x = cos(lat) * cos(lon);
-			vertexData[start].position.y = sin(lat);
-			vertexData[start].position.z = cos(lat) * sin(lon);
+			vertexData[start].position.x = cos(shita) * cos(phai);
+			vertexData[start].position.y = sin(shita);
+			vertexData[start].position.z = cos(shita) * sin(phai);
 			vertexData[start].position.w = 1.0f;
-			vertexData[start].texcood = { u,v };
+			vertexData[start].texcood = { u, v };
 
-			vertexData[start + 1].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[start + 1].position.y = sin(lat);
-			vertexData[start + 1].position.z = cos(lat) * sin(lon + kLonEvery);
+			// b の頂点データを計算
+			vertexData[start + 1].position.x = cos(shita + kShitaEvery) * cos(phai);
+			vertexData[start + 1].position.y = sin(shita + kShitaEvery);
+			vertexData[start + 1].position.z = cos(shita + kShitaEvery) * sin(phai);
 			vertexData[start + 1].position.w = 1.0f;
 			vertexData[start + 1].texcood = { u + 1.0f / float(kSubdivision), v };
 
 			// c の頂点データを計算
-			vertexData[start + 2].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[start + 2].position.y = sin(lat + kLatEvery);
-			vertexData[start + 2].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 2].position.x = cos(shita) * cos(phai + kPhaiEvery);
+			vertexData[start + 2].position.y = sin(shita);
+			vertexData[start + 2].position.z = cos(shita) * sin(phai + kPhaiEvery);
 			vertexData[start + 2].position.w = 1.0f;
 			vertexData[start + 2].texcood = { u, v - 1.0f / float(kSubdivision) };
 
 			// b の頂点データを計算
-			vertexData[start + 3].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[start + 3].position.y = sin(lat + kLatEvery);
-			vertexData[start + 3].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			vertexData[start + 3].position.x = cos(shita + kShitaEvery) * cos(phai);
+			vertexData[start + 3].position.y = sin(shita + kShitaEvery);
+			vertexData[start + 3].position.z = cos(shita + kShitaEvery) * sin(phai);
 			vertexData[start + 3].position.w = 1.0f;
-			vertexData[start + 3].texcood = { u + 1.0f / float(kSubdivision), v - 1.0f / float(kSubdivision) };
+			vertexData[start + 3].texcood = { u + 1.0f / float(kSubdivision), v };
 
 			// c の頂点データを計算
-			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[start + 4].position.y = sin(lat + kLatEvery);
-			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 4].position.x = cos(shita) * cos(phai + kPhaiEvery);
+			vertexData[start + 4].position.y = sin(shita);
+			vertexData[start + 4].position.z = cos(shita) * sin(phai + kPhaiEvery);
 			vertexData[start + 4].position.w = 1.0f;
 			vertexData[start + 4].texcood = { u, v - 1.0f / float(kSubdivision) };
 
 			// d の頂点データを計算
-			vertexData[start + 5].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[start + 5].position.y = sin(lat + kLatEvery);
-			vertexData[start + 5].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexData[start + 5].position.x = cos(shita + kShitaEvery) * cos(phai + kPhaiEvery);
+			vertexData[start + 5].position.y = sin(shita + kShitaEvery);
+			vertexData[start + 5].position.z = cos(shita + kShitaEvery) * sin(phai + kPhaiEvery);
 			vertexData[start + 5].position.w = 1.0f;
-			vertexData[start + 5].texcood = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 5].texcood = { u, v + 1.0f / float(kSubdivision)};
 		}
 	}
 
@@ -933,7 +939,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ImGui::NewFrame();
 
 
-			transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;
 
 			TransformUi[0][0] = transformSprite.scale.x;
 			TransformUi[0][1] = transformSprite.scale.y;
@@ -948,9 +954,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			TransformUi[2][2] = transformSprite.translate.z;
 
 			// X、Y、Zの位置をスライダーで変更
-			ImGui::SliderFloat("X Position", &transform.translate.x, -10.0f, 10.0f);
-			ImGui::SliderFloat("Y Position", &transform.translate.y, -10.0f, 10.0f);
-			ImGui::DragFloat("Z Position", &transform.translate.z, 0.1f, 1.0f);
+			ImGui::SliderFloat("X Position", &transform.rotate.x, -10.0f, 10.0f);
+			ImGui::SliderFloat("Y Position", &transform.rotate.y, -10.0f, 10.0f);
+			ImGui::DragFloat("Z Position", &transform.rotate.z, 0.1f, 1.0f);
 
 			ImGui::DragFloat3("spriteS", TransformUi[0], 0.1f, 1.0f);
 			ImGui::DragFloat3("spriteR", TransformUi[1], 0.1f, 1.0f);
@@ -1052,7 +1058,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//======================
 
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(vertexCount, 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
@@ -1113,6 +1119,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	CloseHandle(fenceEvent);
+	vertexResourceSprite->Release();
+	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
 	srvDescriptorHeap->Release();
