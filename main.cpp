@@ -39,6 +39,16 @@ struct Vector4
 	float w;
 };
 
+Vector3 changeVec3(Vector4 a)
+{
+	Vector3 result;
+	result.x = a.x;
+	result.y = a.y;
+	result.z = a.z;
+
+	return result;
+}
+
 //struct Matrix4x4
 //{
 //	float m[4][4];
@@ -51,10 +61,10 @@ struct Transform
 	Vector3 translate;
 };
 
-struct VertexData
-{
+struct VertexData {
 	Vector4 position;
-	Vector2 texcood;
+	Vector2 texcoord;
+	Vector3 normal;
 };
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -644,7 +654,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	assert(SUCCEEDED(hr));
 
 
-	D3D12_INPUT_ELEMENT_DESC inputElementDesc[2] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDesc[3] = {};
 	inputElementDesc[0].SemanticName = "POSITION";
 	inputElementDesc[0].SemanticIndex = 0;
 	inputElementDesc[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -653,6 +663,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	inputElementDesc[1].SemanticIndex = 0;
 	inputElementDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDesc[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDesc[2].SemanticName = "NORMAL";
+	inputElementDesc[2].SemanticIndex = 0;
+	inputElementDesc[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDesc[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDesc;
 	inputLayoutDesc.NumElements = _countof(inputElementDesc);
@@ -759,7 +773,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					cos(shita) * cos(phai),
 					sin(shita),
 					cos(shita) * sin(phai),
-					
 					1.0f				
 				},
 				{
@@ -767,6 +780,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					v
 				}
 			};
+			vLB.normal = changeVec3(vLB.position);
 
 			VertexData vLT = {
 				{
@@ -780,6 +794,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					v - 1.0f / float(kSubdivision)
 				}
 			};
+			vLT.normal = changeVec3(vLT.position);
 
 			VertexData vRB = {
 				{
@@ -793,6 +808,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					v
 				}
 			};
+			vRB.normal = changeVec3(vRB.position);
 
 			VertexData vRT = {
 				{
@@ -806,6 +822,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					v - 1.0f / float(kSubdivision)
 				}
 			};
+			vRT.normal = changeVec3(vRT.position);
 
 			// 原点aにデータを入力する
 			vertexData[start] = vRT;
@@ -841,18 +858,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
 	vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
-	vertexDataSprite[0].texcood = { 0.0f, 1.0f };
+	vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+	vertexDataSprite[0].normal = {0.0f, 0.0f, -1.0f};
 	vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
-	vertexDataSprite[1].texcood = { 0.0f, 0.0f };
+	vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
 	vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
-	vertexDataSprite[2].texcood = { 1.0f, 1.0f };
+	vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
 
 	vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 右下
-	vertexDataSprite[3].texcood = { 0.0f, 0.0f };
+	vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
+	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
 	vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f }; // 左上
-	vertexDataSprite[4].texcood = { 1.0f, 0.0f };
+	vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
+	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
 	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右上
-	vertexDataSprite[5].texcood = { 1.0f, 1.0f };
+	vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
 
 	const uint32_t descripotrSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descripotrSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);

@@ -9,6 +9,7 @@ struct Vector3
 	float z;
 };
 
+
 struct Matrix4x4
 {
 	float m[4][4]; // 4x4行列の要素
@@ -369,3 +370,4 @@ Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& w
 
 	return result;
 }
+
