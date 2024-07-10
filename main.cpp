@@ -1048,6 +1048,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	CloseHandle(fenceEvent);
+	vertexResourceSprite->Release();
+	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
 	srvDescriptorHeap->Release();
