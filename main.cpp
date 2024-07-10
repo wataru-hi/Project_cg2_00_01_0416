@@ -67,6 +67,11 @@ struct VertexData {
 	Vector3 normal;
 };
 
+struct Material {
+	Vector4 color;
+	int32_t enableLighting;
+};
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
@@ -843,6 +848,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+	Material* materialDateSprite = nullptr;
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDateSprite));
+	materialDateSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDateSprite->enableLighting = false;
+
+
+
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
 	//リソースの先頭のアドレスから使う
@@ -1120,7 +1133,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			commandList->DrawInstanced(vertexCount, 1, 0, 0);
 
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
@@ -1201,6 +1217,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	vertexResource->Release();
 	materialResource->Release();
+	materialResourceSprite->Release();
 	wvpResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlod->Release();
