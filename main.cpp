@@ -767,47 +767,72 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			float u = float(lonIndex) / float(kSubdivision);
 			float v = 1.0f - float(latIndex) / float(kSubdivision);
 
+			VertexData vLB = {
+				{
+					cos(shita) * cos(phai),
+					sin(shita),
+					cos(shita) * sin(phai),
+					
+					1.0f				
+				},
+				{
+					u,
+					v
+				}
+			};
+
+			VertexData vLT = {
+				{
+					cos(shita + kShitaEvery) * cos(phai),
+					sin(shita + kShitaEvery),
+					cos(shita + kShitaEvery) * sin(phai),
+					1.0f				
+				},
+				{
+					u,
+					v - 1.0f / float(kSubdivision)
+				}
+			};
+
+			VertexData vRB = {
+				{
+					cos(shita) * cos(phai + kPhaiEvery),
+					sin(shita),
+					cos(shita) * sin(phai + kPhaiEvery),
+					1.0f
+				},
+				{
+					u + 1.0f / float(kSubdivision) ,
+					v
+				}
+			};
+
+			VertexData vRT = {
+				{
+					cos(shita + kShitaEvery) * cos(phai + kPhaiEvery),
+					sin(shita + kShitaEvery),
+					cos(shita + kShitaEvery) * sin(phai + kPhaiEvery),
+					1.0f				
+				},
+				{
+					u + 1.0f / float(kSubdivision),
+					v - 1.0f / float(kSubdivision)
+				}
+			};
+
 			// 原点aにデータを入力する
-			vertexData[start].position.x = cos(shita) * cos(phai);
-			vertexData[start].position.y = sin(shita);
-			vertexData[start].position.z = cos(shita) * sin(phai);
-			vertexData[start].position.w = 1.0f;
-			vertexData[start].texcood = { u, v };
+			vertexData[start] = vRT;
 
 			// b の頂点データを計算
-			vertexData[start + 1].position.x = cos(shita + kShitaEvery) * cos(phai);
-			vertexData[start + 1].position.y = sin(shita + kShitaEvery);
-			vertexData[start + 1].position.z = cos(shita + kShitaEvery) * sin(phai);
-			vertexData[start + 1].position.w = 1.0f;
-			vertexData[start + 1].texcood = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 1] = vRB;
+			vertexData[start + 3] = vRB;
 
 			// c の頂点データを計算
-			vertexData[start + 2].position.x = cos(shita) * cos(phai + kPhaiEvery);
-			vertexData[start + 2].position.y = sin(shita);
-			vertexData[start + 2].position.z = cos(shita) * sin(phai + kPhaiEvery);
-			vertexData[start + 2].position.w = 1.0f;
-			vertexData[start + 2].texcood = { u, v - 1.0f / float(kSubdivision) };
-
-			// b の頂点データを計算
-			vertexData[start + 3].position.x = cos(shita + kShitaEvery) * cos(phai);
-			vertexData[start + 3].position.y = sin(shita + kShitaEvery);
-			vertexData[start + 3].position.z = cos(shita + kShitaEvery) * sin(phai);
-			vertexData[start + 3].position.w = 1.0f;
-			vertexData[start + 3].texcood = { u + 1.0f / float(kSubdivision), v };
-
-			// c の頂点データを計算
-			vertexData[start + 4].position.x = cos(shita) * cos(phai + kPhaiEvery);
-			vertexData[start + 4].position.y = sin(shita);
-			vertexData[start + 4].position.z = cos(shita) * sin(phai + kPhaiEvery);
-			vertexData[start + 4].position.w = 1.0f;
-			vertexData[start + 4].texcood = { u, v - 1.0f / float(kSubdivision) };
+			vertexData[start + 2] = vLT;
+			vertexData[start + 4] = vLT;
 
 			// d の頂点データを計算
-			vertexData[start + 5].position.x = cos(shita + kShitaEvery) * cos(phai + kPhaiEvery);
-			vertexData[start + 5].position.y = sin(shita + kShitaEvery);
-			vertexData[start + 5].position.z = cos(shita + kShitaEvery) * sin(phai + kPhaiEvery);
-			vertexData[start + 5].position.w = 1.0f;
-			vertexData[start + 5].texcood = { u, v + 1.0f / float(kSubdivision)};
+			vertexData[start + 5] = vLB;
 		}
 	}
 
