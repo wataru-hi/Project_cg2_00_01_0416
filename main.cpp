@@ -325,6 +325,20 @@ ID3D12Resource* createDepthTextureResource(ID3D12Device* device, int32_t width, 
 
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptoprHeap, uint32_t descripotrSize, uint32_t index)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptoprHeap->GetCPUDescriptorHandleForHeapStart();
+	handleCPU.ptr += (descripotrSize * index);
+	return handleCPU;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptoprHeap, uint32_t descripotrSize, uint32_t index)
+{
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptoprHeap->GetGPUDescriptorHandleForHeapStart();
+	handleGPU.ptr += (descripotrSize * index);
+	return handleGPU;
+}
+
 // Windowsアプリのエントリーポイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -629,15 +643,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(hr));
 
-	////InputLayout
-	//D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
-	//inputElementDescs[0].SemanticName = "POSITION";
-	//inputElementDescs[0].SemanticIndex = 0;
-	//inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	//inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-	//D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	//inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	//inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDesc[2] = {};
 	inputElementDesc[0].SemanticName = "POSITION";
@@ -727,24 +732,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	////左下
-	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[0].texcood = { 0.0f, 1.0f };
-	////上
-	//vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-	//vertexData[1].texcood = { 0.5f, 0.0f };
-	////右下
-	//vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[2].texcood = { 1.0f, 1.0f };
-	////左下
-	//vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
-	//vertexData[3].texcood = { 0.0f, 1.0f };
-	////上
-	//vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-	//vertexData[4].texcood = { 0.5f, 0.0f };
-	////右下
-	//vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
-	//vertexData[5].texcood = { 1.0f, 1.0f };
 
 	// 緯度方向の分割数
 	const int kSubdivision = 16;
@@ -866,6 +853,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexDataSprite[4].texcood = { 1.0f, 0.0f };
 	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右上
 	vertexDataSprite[5].texcood = { 1.0f, 1.0f };
+
+	const uint32_t descripotrSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const uint32_t descripotrSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	const uint32_t descripotrSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
