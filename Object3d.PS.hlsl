@@ -15,10 +15,18 @@ struct PixcelShaderOutput
     float32_t4 color : SV_Target0;
 };
 
+struct DirectrionaLight
+{
+    float32_t4 color; //!< ライトの色
+    float32_t3 direction; //!< ライトの向き
+    float intensity;
+};
+
 PixcelShaderOutput main(VertexShaderOutput input)
 {   
     PixcelShaderOutput output;
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
     output.color = gMaterial.color * textureColor;
+    ConstantBuffer<DirectrionaLight> DirectrionaLight : register(b1);
     return output;
 }

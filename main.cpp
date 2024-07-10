@@ -72,6 +72,17 @@ struct Material {
 	int32_t enableLighting;
 };
 
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+
+struct DirectrionaLight {
+	Vector4 color; //!< ライトの色
+	Vector3 direction; //!< ライトの向き
+	float intensity; //!< 輝度
+};
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
@@ -625,6 +636,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身を配列を指定
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableの中身を配列を指定
+	rootParameters[3]
 	descripionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descripionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
@@ -853,8 +865,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDateSprite));
 	materialDateSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDateSprite->enableLighting = false;
-
-
 
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
@@ -1123,6 +1133,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//描画用のDescriptorHeapの設定
 			ID3D12DescriptorHeap* descriptoHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptoHeaps);
+
 
 			//======================
 
