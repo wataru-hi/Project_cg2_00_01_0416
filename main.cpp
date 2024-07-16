@@ -624,6 +624,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	descripionRootSignature.Flags =
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+
 	//RootParameter作成、複数設定ができるまで配列。今回は一つだけなので長さ１の配列
 	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを作る
@@ -636,7 +637,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身を配列を指定
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableの中身を配列を指定
-	rootParameters[3]
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixcelShaderで使う
+	rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１
 	descripionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descripionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
@@ -744,11 +747,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
 	//マテリアルにデータを書き込む
-	Vector4* materialDate = nullptr;
+	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
 	//今回は赤を書き込んでみる
-	*materialDate = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDate->enableLighting = true;
 
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -856,7 +860,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			vertexData[start + 5] = vLB;
 		}
 	}
-
+	
 
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 
@@ -899,6 +903,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右上
 	vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
 	vertexDataSprite[1].normal = {0.0f, 0.0f, -1.0f};
+
+	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectrionaLight));
+
+	ID3D12Resource* materialResourecDLight = CreateBufferResource(device, sizeof(Material));
+	Material* materialDataDLight;
+	materialResourecDLight->Map(0, nullptr, reinterpret_cast<void**>(&materialDataDLight));
+	materialDataDLight->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDataDLight->enableLighting = true;
+	
+	DirectrionaLight* directrionaLightData = nullptr;
+
+	directrionaLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
+	directrionaLightData->intensity = 1.0f;
 
 	const uint32_t descripotrSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descripotrSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -1129,6 +1147,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+
+			commandList->
 
 			//描画用のDescriptorHeapの設定
 			ID3D12DescriptorHeap* descriptoHeaps[] = { srvDescriptorHeap };

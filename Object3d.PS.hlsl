@@ -22,11 +22,12 @@ struct DirectrionaLight
     float intensity;
 };
 
+ConstantBuffer<DirectrionaLight> gDirectrionaLight : register(b1);
+
 PixcelShaderOutput main(VertexShaderOutput input)
 {   
     PixcelShaderOutput output;
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
     output.color = gMaterial.color * textureColor;
-    ConstantBuffer<DirectrionaLight> DirectrionaLight : register(b1);
     return output;
 }
