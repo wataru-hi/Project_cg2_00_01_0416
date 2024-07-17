@@ -6,10 +6,6 @@ struct Material
     int32_t enableLightng;
 };
 
-ConstantBuffer<Material> gMaterial : register(b0);
-Texture2D<float32_t4> gTexture : register(t0);
-SamplerState gSampler : register(s0);
-    
 struct PixcelShaderOutput
 {
     float32_t4 color : SV_Target0;
@@ -22,12 +18,26 @@ struct DirectrionaLight
     float intensity;
 };
 
+ConstantBuffer<Material> gMaterial : register(b0);
+Texture2D<float32_t4> gTexture : register(t0);
+SamplerState gSampler : register(s0);
 ConstantBuffer<DirectrionaLight> gDirectrionaLight : register(b1);
 
 PixcelShaderOutput main(VertexShaderOutput input)
 {   
     PixcelShaderOutput output;
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-    output.color = gMaterial.color * textureColor;
+    
+    if (gMaterial.enableLightng != 0)//Litingする場合
+    {
+        float cos = saturate(dot(normalize(input.normal), -gDirectrionaLight.direction));
+        output.color = gMaterial.color * textureColor * gDirectrionaLight.color * cos * gDirectrionaLight.intensity;
+    }
+    else
+    {
+        output.color = gMaterial.color * textureColor;
+    }
+    
+    
     return output;
 }

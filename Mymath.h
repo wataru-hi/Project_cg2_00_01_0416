@@ -15,6 +15,13 @@ struct Matrix4x4
 	float m[4][4]; // 4x4行列の要素
 };
 
+struct Transform
+{
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+};
+
 Matrix4x4 add(const Matrix4x4& m1, const Matrix4x4& m2)
 {
 	Matrix4x4 result;
@@ -370,4 +377,3 @@ Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& w
 
 	return result;
 }
-
