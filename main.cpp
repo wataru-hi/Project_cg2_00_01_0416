@@ -738,6 +738,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int vertexCount = 1536;
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
+	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
@@ -757,11 +758,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	
+	//頂点バッファビューを作成する
+	D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
+	//リソースの先頭のアドレスから使う
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	//使用するリソースサイズは頂点3つ分のサイズ
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
+	//1頂点当たりのサイズ
+	indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
 
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	
+	//頂点リソースにデータを書き込む
+	uint32_t* indexData = nullptr;
+	//書き込むためのアドレスを取得
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
 	// 緯度方向の分割数
 	const int kSubdivision = 16;
@@ -853,6 +868,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			// d の頂点データを計算
 			vertexData[start + 5] = vLB;
+
+			indexData[0] = start + 0; indexData[1] = start + 1; indexData[2] = start + 2;
+			indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
 		}
 	}
 	
@@ -1265,6 +1283,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	CloseHandle(fenceEvent);
 	indexResourceSprite->Release();
 	vertexResourceSprite->Release();
+	indexResource->Release();
 	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
