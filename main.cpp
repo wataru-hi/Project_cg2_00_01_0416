@@ -857,7 +857,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	
 
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
 	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 	Material* materialDateSprite = nullptr;
@@ -866,38 +866,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	materialDateSprite->enableLighting = false;
 
 	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
 	//リソースの先頭のアドレスから使う
-	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
 	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
 	//1頂点当たりのサイズ
-	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
 
 	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSprite = nullptr;
+	uint32_t* indexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
-	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
 
-	vertexDataSprite[0].position	= { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
-	vertexDataSprite[0].texcoord	= { 0.0f, 1.0f };
-	vertexDataSprite[0].normal		= { 0.0f, 0.0f, -1.0f};
-	vertexDataSprite[1].position	= { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
-	vertexDataSprite[1].texcoord	= { 0.0f, 0.0f };
-	vertexDataSprite[1].normal		= { 0.0f, 0.0f, -1.0f};
-	vertexDataSprite[2].position	= { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
-	vertexDataSprite[2].texcoord	= { 1.0f, 1.0f };
-	vertexDataSprite[2].normal		= { 0.0f, 0.0f, -1.0f};
-
-	vertexDataSprite[3].position	= { 0.0f, 0.0f, 0.0f, 1.0f }; // 右下
-	vertexDataSprite[3].texcoord	= { 0.0f, 0.0f };
-	vertexDataSprite[3].normal		= { 0.0f, 0.0f, -1.0f};
-	vertexDataSprite[4].position	= { 640.0f, 0.0f, 0.0f, 1.0f }; // 左上
-	vertexDataSprite[4].texcoord	= { 1.0f, 0.0f };
-	vertexDataSprite[4].normal		= { 0.0f, 0.0f, -1.0f};
-	vertexDataSprite[5].position	= { 640.0f, 360.0f, 0.0f, 1.0f }; // 右上
-	vertexDataSprite[5].texcoord	= { 1.0f, 1.0f };
-	vertexDataSprite[5].normal		= { 0.0f, 0.0f, -1.0f};
+	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
 	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectrionaLight));
 
@@ -1118,20 +1101,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 			transfromationMatrixDataSprite->World = worldMatrixSprite;
 
-			//// 4x4配列の要素を表示
-			//for (int row = 0; row < 4; ++row)
-			//{
-			//	for (int col = 0; col < 4; ++col)
-			//	{
-			//		ImGui::Text("M[%d][%d]: %f", row, col, worldViewProjectionmatrix.m[row][col]);
-			//	}
-			//}
-
-
-
-
-			//*wvpData = worldMatrix;
-
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
@@ -1184,23 +1153,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ID3D12DescriptorHeap* descriptoHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptoHeaps);
 
-
-			//======================
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-			//======================
 
 			commandList->DrawInstanced(vertexCount, 1, 0, 0);
 
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
-
+			commandList->IASetVertexBuffers(0, 1, &indexBufferViewSprite);//VBVを設定
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);//0501
 
-
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(6, 1, 0, 0);
-
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());//0400
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);//VBVを設定0400
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1257,7 +1221,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	CloseHandle(fenceEvent);
-	vertexResourceSprite->Release();
+	indexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
