@@ -896,6 +896,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
+	VertexData hidariSita;
+	hidariSita.position = { 0.0f, 360.0f, 0.0f, 1.0f };
+	hidariSita.texcoord = { 0.0f, 1.0f };
+	hidariSita.normal	= { 0.0f, 0.0f, -1.0f};
+
+	VertexData hidariue;
+	hidariue.position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	hidariue.texcoord = { 0.0f, 0.0f };
+	hidariue.normal	= { 0.0f, 0.0f, -1.0f};
+
+	VertexData migiUe;
+	migiUe.position =  { 640.0f, 0.0f, 0.0f, 1.0f };
+	migiUe.texcoord = { 1.0f, 0.0f };
+	migiUe.normal	= { 0.0f, 0.0f, -1.0f};
+
+	VertexData migiSita;
+	migiSita.position = { 640.0f, 360.0f, 0.0f, 1.0f };
+	migiSita.texcoord = { 1.0f, 1.0f };
+	migiSita.normal	= { 0.0f, 0.0f, -1.0f};
+
+	vertexDataSprite[0] = hidariSita;
+	vertexDataSprite[1] = hidariue;
+	vertexDataSprite[2] = migiSita;
+	
+	vertexDataSprite[3] = hidariue;
+	vertexDataSprite[4] = migiUe;
+	vertexDataSprite[5] = migiSita;
+
 	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectrionaLight));
 
 	DirectrionaLight* directrionaLightData = nullptr;
@@ -1236,6 +1264,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//解放処理
 	CloseHandle(fenceEvent);
 	indexResourceSprite->Release();
+	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
