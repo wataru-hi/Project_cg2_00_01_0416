@@ -9,10 +9,9 @@ struct Vector3
 	float z;
 };
 
-
 struct Matrix4x4
 {
-	float m[4][4]; // 4x4行列の要素
+	float m[4][4];
 };
 
 struct Transform
