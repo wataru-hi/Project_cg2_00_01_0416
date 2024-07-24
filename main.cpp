@@ -827,7 +827,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ImGui::NewFrame();
 
 
-			transform.rotate.y += 0.03f;
+			transform.rotate.y += 0.04f;
 
 			//開発用UIの処理。実際に開発用UIを出す場合はここをゲーム固有の処理に置き換えて作る
 			//ImGui::ShowDemoWindow();
