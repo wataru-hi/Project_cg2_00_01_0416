@@ -390,6 +390,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		{
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
+			position.y *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
 		}
@@ -823,7 +824,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
 	////今回は赤を書き込んでみる
 	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	//materialDate->enableLighting = true;
+	//materialDate->enableLighting = false;
 
 	////頂点バッファビューを作成する
 	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -961,6 +962,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	//マテリアルにデータを書き込む
+	Material* materialDate = nullptr;
+	//書き込むためのアドレスを取得
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	//今回は赤を書き込んでみる
+	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDate->enableLighting = false;
 
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
@@ -1315,7 +1326,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			//マテリアルｃBufferの設定
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(0, vertexResource->GetGPUVirtualAddress());
 
 			//wvp用のCBufferの場所を設定
@@ -1417,7 +1428,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	depthStencilResouce->Release();
 
 	vertexResource->Release();
-	//materialResource->Release();
+	materialResource->Release();
 	materialResourceSprite->Release();
 	wvpResource->Release();
 	graphicsPipelineState->Release();
