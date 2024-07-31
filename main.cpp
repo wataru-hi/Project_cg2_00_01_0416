@@ -17,6 +17,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <wrl.h>
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -525,7 +527,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ShowWindow(hwnd, SW_SHOW);
 
 	//DXGIファクトリーの生成
-	IDXGIFactory7* dxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory7>f dxgiFactory = nullptr;
 	//HRESULはWindows系のエラーコードあり
 	//関数が成功したかどうかをSUCCEEDEマクロで判定できる
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -1095,7 +1097,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
-	ID3D12Resource* textureResource = CreateTextureResouce(device, metadata);
+	//ID3D12Resource* textureResource = CreateTextureResouce(device, metadata);
+
+	Microsoft::WRL::ComPtr<ID3D12Resource>
+	CreateTextureResouce(Microsoft::WRL::ComPtr<ID3D12Resource> device, const DirectX:::tex)
+
 	UploadTextureData(textureResource, mipImages);
 
 	//metaDataを基にSRVの設定
