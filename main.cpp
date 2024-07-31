@@ -14,6 +14,9 @@
 #include "externals/DirectXTex/DirectXTex.h"
 #include <cmath>
 
+#include <fstream>
+#include <sstream>
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -67,6 +70,10 @@ struct Material {
 	int32_t enableLighting;
 	float padding[3];
 	Matrix4x4 uvTransform;
+};
+
+struct ModelData {
+	std::vector<VertexData> vertices;
 };
 
 struct TransformationMatrix {
@@ -360,6 +367,72 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptoprHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descripotrSize * index);
 	return handleGPU;
+}
+
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename)
+{
+	ModelData modelData;
+	std::vector<Vector4> positions;
+	std::vector<Vector3> normals;
+	std::vector<Vector2> texcoords;
+	std::string line;
+
+	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
+	assert(file.is_open());
+
+	while (std::getline(file, line))
+	{
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier; //先頭の識別子を読む
+
+		if (identifier == "v")
+		{
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;
+			positions.push_back(position);
+		}
+		else if(identifier == "vt")
+		{
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);
+		}
+		else if(identifier == "vn")
+		{
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);
+		}
+		else if (identifier == "f") 
+		{
+			// 面は三角形限定．その他は未対応
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) 
+			{
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+        
+				// 頂点の要素へのIndexを「位置/UV/法線」で格納されているので，分解してIndexを取得する
+				std::stringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/'); // 区切りでインデックスを読んでいく
+					elementIndices[element] = std::stoi(index);
+				}
+        
+				// 要素へのIndexから，実際の要素の値を取得して，頂点を構築する
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
+				VertexData vertex = { position, texcoord, normal };
+				modelData.vertices.push_back(vertex);
+			}
+		}
+	}
+
+	return modelData;
 }
 
 // Windowsアプリのエントリーポイント
@@ -737,145 +810,170 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	int vertexCount = 1536;
+	//int vertexCount = 1536;
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
-	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
+	//ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
 
-	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
-	//マテリアルにデータを書き込む
-	Material* materialDate = nullptr;
-	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	//今回は赤を書き込んでみる
-	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDate->enableLighting = true;
+	////マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
+	//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	////マテリアルにデータを書き込む
+	//Material* materialDate = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	////今回は赤を書き込んでみる
+	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//materialDate->enableLighting = true;
 
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+	//
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
+	////1頂点当たりのサイズ
+	//indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
+
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//
+	////頂点リソースにデータを書き込む
+	//uint32_t* indexData = nullptr;
+	////書き込むためのアドレスを取得
+	//indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	//// 緯度方向の分割数
+	//const int kSubdivision = 16;
+	//// 経度分割1つ分の角度
+	//const float kPhaiEvery = M_PI * 2.0f / float(kSubdivision);
+	//// 緯度分割1つ分の角度
+	//const float kShitaEvery = M_PI / float(kSubdivision);
+	//// 緯度の方向に分割
+	//for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+	//	float shita = -M_PI / 2.0f + kShitaEvery * latIndex;//θ
+
+	//	// 経度の方向に分割しながら線を描く
+	//	for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+	//		uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+	//		float phai = lonIndex * kPhaiEvery;//φ
+
+	//		/*float u = float(lonIndex / kSubdivision);
+	//		float v = 1.0f - float(latIndex / kSubdivision);*/
+
+	//		float u = float(lonIndex) / float(kSubdivision);
+	//		float v = 1.0f - float(latIndex) / float(kSubdivision);
+
+	//		VertexData vLB = {
+	//			{
+	//				cos(shita) * cos(phai),
+	//				sin(shita),
+	//				cos(shita) * sin(phai),
+	//				1.0f				
+	//			},
+	//			{
+	//				u,
+	//				v
+	//			}
+	//		};
+	//		vLB.normal = changeVec3(vLB.position);
+
+	//		VertexData vLT = {
+	//			{
+	//				cos(shita + kShitaEvery) * cos(phai),
+	//				sin(shita + kShitaEvery),
+	//				cos(shita + kShitaEvery) * sin(phai),
+	//				1.0f				
+	//			},
+	//			{
+	//				u,
+	//				v - 1.0f / float(kSubdivision)
+	//			}
+	//		};
+	//		vLT.normal = changeVec3(vLT.position);
+
+	//		VertexData vRB = {
+	//			{
+	//				cos(shita) * cos(phai + kPhaiEvery),
+	//				sin(shita),
+	//				cos(shita) * sin(phai + kPhaiEvery),
+	//				1.0f
+	//			},
+	//			{
+	//				u + 1.0f / float(kSubdivision) ,
+	//				v
+	//			}
+	//		};
+	//		vRB.normal = changeVec3(vRB.position);
+
+	//		VertexData vRT = {
+	//			{
+	//				cos(shita + kShitaEvery) * cos(phai + kPhaiEvery),
+	//				sin(shita + kShitaEvery),
+	//				cos(shita + kShitaEvery) * sin(phai + kPhaiEvery),
+	//				1.0f				
+	//			},
+	//			{
+	//				u + 1.0f / float(kSubdivision),
+	//				v - 1.0f / float(kSubdivision)
+	//			}
+	//		};
+	//		vRT.normal = changeVec3(vRT.position);
+
+	//		// 原点aにデータを入力する
+	//		vertexData[start] = vRT;
+
+	//		// b の頂点データを計算
+	//		vertexData[start + 1] = vRB;
+	//		vertexData[start + 3] = vRB;
+
+	//		// c の頂点データを計算
+	//		vertexData[start + 2] = vLT;
+	//		vertexData[start + 4] = vLT;
+
+	//		// d の頂点データを計算
+	//		vertexData[start + 5] = vLB;
+
+	//		indexData[0] = start + 0; indexData[1] = start + 1; indexData[2] = start + 2;
+	//		indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
+	//	}
+	//}
+
+	//モデルの読み込み
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	//頂点リソースを作る
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
-	//リソースの先頭のアドレスから使う
-	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	//使用するリソースサイズは頂点3つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
-	//1頂点当たりのサイズ
-	indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
 
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 	
-	//頂点リソースにデータを書き込む
-	uint32_t* indexData = nullptr;
-	//書き込むためのアドレスを取得
-	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
-
-	// 緯度方向の分割数
-	const int kSubdivision = 16;
-	// 経度分割1つ分の角度
-	const float kPhaiEvery = M_PI * 2.0f / float(kSubdivision);
-	// 緯度分割1つ分の角度
-	const float kShitaEvery = M_PI / float(kSubdivision);
-	// 緯度の方向に分割
-	for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float shita = -M_PI / 2.0f + kShitaEvery * latIndex;//θ
-
-		// 経度の方向に分割しながら線を描く
-		for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float phai = lonIndex * kPhaiEvery;//φ
-
-			/*float u = float(lonIndex / kSubdivision);
-			float v = 1.0f - float(latIndex / kSubdivision);*/
-
-			float u = float(lonIndex) / float(kSubdivision);
-			float v = 1.0f - float(latIndex) / float(kSubdivision);
-
-			VertexData vLB = {
-				{
-					cos(shita) * cos(phai),
-					sin(shita),
-					cos(shita) * sin(phai),
-					1.0f				
-				},
-				{
-					u,
-					v
-				}
-			};
-			vLB.normal = changeVec3(vLB.position);
-
-			VertexData vLT = {
-				{
-					cos(shita + kShitaEvery) * cos(phai),
-					sin(shita + kShitaEvery),
-					cos(shita + kShitaEvery) * sin(phai),
-					1.0f				
-				},
-				{
-					u,
-					v - 1.0f / float(kSubdivision)
-				}
-			};
-			vLT.normal = changeVec3(vLT.position);
-
-			VertexData vRB = {
-				{
-					cos(shita) * cos(phai + kPhaiEvery),
-					sin(shita),
-					cos(shita) * sin(phai + kPhaiEvery),
-					1.0f
-				},
-				{
-					u + 1.0f / float(kSubdivision) ,
-					v
-				}
-			};
-			vRB.normal = changeVec3(vRB.position);
-
-			VertexData vRT = {
-				{
-					cos(shita + kShitaEvery) * cos(phai + kPhaiEvery),
-					sin(shita + kShitaEvery),
-					cos(shita + kShitaEvery) * sin(phai + kPhaiEvery),
-					1.0f				
-				},
-				{
-					u + 1.0f / float(kSubdivision),
-					v - 1.0f / float(kSubdivision)
-				}
-			};
-			vRT.normal = changeVec3(vRT.position);
-
-			// 原点aにデータを入力する
-			vertexData[start] = vRT;
-
-			// b の頂点データを計算
-			vertexData[start + 1] = vRB;
-			vertexData[start + 3] = vRB;
-
-			// c の頂点データを計算
-			vertexData[start + 2] = vLT;
-			vertexData[start + 4] = vLT;
-
-			// d の頂点データを計算
-			vertexData[start + 5] = vLB;
-
-			indexData[0] = start + 0; indexData[1] = start + 1; indexData[2] = start + 2;
-			indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
-		}
+	VertexData triangel[3];
+	
+	for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex)
+	{
+		
 	}
-	
+
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
@@ -1046,7 +1144,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{0.0f, 0.0f, 0.0f},
 	};
 
-	materialDate->uvTransform = MakeIdentity4x4();
+	//materialDate->uvTransform = MakeIdentity4x4();
 	materialDateSprite->uvTransform = MakeIdentity4x4();
 
 	float TransformUi[3][3];
@@ -1224,7 +1322,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			//マテリアルｃBufferの設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(0, vertexResource->GetGPUVirtualAddress());
 
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
@@ -1235,7 +1334,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-			commandList->DrawInstanced(vertexCount, 1, 0, 0);
+			//commandList->DrawInstanced(vertexCount, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);//VBVを設定0400
@@ -1303,7 +1403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	CloseHandle(fenceEvent);
 	indexResourceSprite->Release();
 	vertexResourceSprite->Release();
-	indexResource->Release();
+	//indexResource->Release();
 	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
@@ -1324,7 +1424,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	depthStencilResouce->Release();
 
 	vertexResource->Release();
-	materialResource->Release();
+	//materialResource->Release();
 	materialResourceSprite->Release();
 	wvpResource->Release();
 	graphicsPipelineState->Release();
