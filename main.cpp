@@ -76,12 +76,13 @@ struct DirectrionaLight {
 	float intensity; //!< 輝度
 };
 
-struct ModelData {
-	std::vector<VertexData> vertices;
+struct MaterialData {
+	std::string textureFilepPath;
 };
 
-struct MaterialData {
-	std::string textureFilepPath
+struct ModelData {
+	std::vector<VertexData> vertices;
+	MaterialData material;
 };
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -366,6 +367,32 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 	return handleGPU;
 }
 
+MaterialData LoadmaterialTemplateFile(const std::string& directoryPath, const std::string& filename) 
+{
+	MaterialData materialData;
+	std::string line;
+
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());
+
+	while (std::getline(file, line))
+	{
+		std::string identifile;
+		std::istringstream s(line);
+		s >> identifile;
+
+		//identifileに応じた処理
+		if (identifile == "map_kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+
+			materialData.textureFilepPath = directoryPath + "/" + textureFilename;
+		}
+	}
+
+	return materialData;
+}
+
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename)
 {
 	ModelData modelData;
@@ -391,6 +418,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		} else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		} else if (identifier == "vn") {
 			Vector3 normal;
@@ -429,19 +457,15 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
 		}
+		else if (identifier == "mtllib")
+		{
+			std::string materialFilename;
+			s >> materialFilename;
+
+			modelData.material = LoadmaterialTemplateFile(directoryPath, materialFilename);
+		}
 	}
 	return modelData;
-}
-
-MaterialData LoadmaterialTemplateFile(const std::string& directoryPath, const std::string& filename) 
-{
-	MaterialData materialData;
-	std::string line;
-
-	std::ifstream file(directoryPath + "/" + filename);
-	assert(file.is_open());
-
-	while (std::gets)
 }
 
 // Windowsアプリのエントリーポイント
@@ -959,7 +983,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//}
 
 	// モデルを読み込み
-	ModelData modelData = LoadObjFile("Resources/06_02", "plane.obj");
+	ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
 
 	// 頂点リソースを作成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -1345,6 +1369,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetDescriptorHeaps(1, descriptoHeaps);
 
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+
+			DirectX::ScratchImage mipImage2 = LoadTexture(modelData.material.textureFilepPath);
 
 			//commandList->DrawInstanced(vertexCount, 1, 0, 0);
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
