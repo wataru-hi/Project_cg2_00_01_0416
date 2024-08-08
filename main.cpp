@@ -198,15 +198,12 @@ IDxcBlob* CompileShader
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlod), nullptr);
 	//成功したログを出す
 	Log(ConvertString(std::format(L"Cmopile Succeded, path:{}, profile:{}\n", filePath, profile)));
-	//もう使わないリソースを開放
-	shaderSource->Release();
-	shaderResult->Release();
 	//実行用のバイナリを返却
 	return shaderBlod;
 
 }
 
-static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
+static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr< ID3D12Device> device, size_t sizeInBytes)
 {
 	HRESULT hr;
 
@@ -607,9 +604,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		filter.DenyList.pSeverityList = severities;
 		//指定したメッセージの表示を抑制する
 		InfoQueue->PushStorageFilter(&filter);
-
-		//解放
-		InfoQueue->Release();
 	}
 #endif
 
@@ -989,7 +983,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
 
 	// 頂点リソースを作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device.Get(), sizeof(VertexData) * modelData.vertices.size());
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -998,7 +992,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device.Get(), sizeof(Material));
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む
 	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
@@ -1009,15 +1003,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(vertexData)); // 書き込むためのアドレスを取得
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size()); // 頂点データをリソースにコピー
-	vertexResource->Unmap(0, nullptr);
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+	uint32_t modelSize = sizeof(VertexData)* modelData.vertices.size();
+	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
+	//vertexResource->Unmap(0, nullptr);
 
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device.Get(), sizeof(VertexData) * 6);
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device.Get(), sizeof(uint32_t) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device.Get(), sizeof(Material));
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 	Material* materialDateSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDateSprite));
 	materialDateSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1082,7 +1077,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexDataSprite[4] = migiUe;
 	vertexDataSprite[5] = migiSita;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = CreateBufferResource(device.Get(), sizeof(DirectrionaLight));
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectrionaLight));
 
 	DirectrionaLight* directrionaLightData = nullptr;
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directrionaLightData));
@@ -1136,7 +1131,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 	//WVP用のリソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 	//データを書き込む
 	TransformationMatrix* wvpData = nullptr;
 	//書き込むためのアドレスを取得
@@ -1146,7 +1141,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	wvpData->World = MakeIdentity4x4();
 
 	//Sprite用のTransformMatrix用のリソースを作る。
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
 	//データを書き込む
 	TransformationMatrix* transfromationMatrixDataSprite = nullptr;
 	//書き込むためのアドレスを取得
@@ -1442,58 +1437,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	CloseHandle(fenceEvent);
-	//indexResourceSprite->Release();
-	//vertexResourceSprite->Release();
-	////indexResource->Release();
-	//transformationMatrixResourceSprite->Release();
-	//fence->Release();
-	//rtvDescriptorHeap->Release();
-	//srvDescriptorHeap->Release();
-	//dsvDescriptorHeap->Release();
-	//swapChainResources[0]->Release();
-	//swapChainResources[1]->Release();
-	//swapChain->Release();
-	//commandList->Release();
-	//commandAllocator->Release();
-	//commandQueue->Release();
-	//device->Release();
-	//UseAdapter->Release();
-	//dxgiFactory->Release();
 
-	//directionalLightResource->Release();
-
-	//depthStencilResouce->Release();
-
-	//vertexResource->Release();
-	//materialResource->Release();
-	//materialResourceSprite->Release();
-	//wvpResource->Release();
-	//graphicsPipelineState->Release();
-	//signatureBlod->Release();
-	//if (errorBlod) {
-	//	errorBlod->Release();
-	//}
-	//rootSignature->Release();
-	//pixelShaderBlob->Release();
-	//vertexShaderBlob->Release();
-
-	//textureResource->Release();
-	//textureResource2->Release();
-
-#ifdef _DEBUG
-	debugContoroller->Release();
-#endif
 	CloseWindow(hwnd);
-
-
-	//リソースリークチェック
-	IDXGIDebug1* debug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		debug->Release();
-	}
 
 	CoUninitialize();
 
