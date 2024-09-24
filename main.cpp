@@ -984,11 +984,108 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//	}
 	//}
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
-	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * 6);
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	//ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	////マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
+	//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	////マテリアルにデータを書き込む
+	//Material* materialDate = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	////今回は赤を書き込んでみる
+	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//materialDate->enableLighting = true;
+
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	////1頂点当たりのサイズ
+	//indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
+
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	////頂点リソースにデータを書き込む
+	//uint32_t* indexData = nullptr;
+	////書き込むためのアドレスを取得
+	//indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	//////左下
+	////vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	////vertexData[0].texcoord = { 0.0f, 1.0f };
+	//////上
+	////vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	////vertexData[1].texcoord = { 0.5f, 0.0f };
+	//////右下
+	////vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	////vertexData[2].texcoord = { 1.0f, 1.0f };
+	//////左下
+	////vertexData[3].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	////vertexData[3].texcoord = { 0.0f, 1.0f };
+	//////上
+	////vertexData[4].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	////vertexData[4].texcoord = { 0.5f, 0.0f };
+	//////右下
+	////vertexData[5].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	////vertexData[5].texcoord = { 1.0f, 1.0f };
+
+	//VertexData leftUp;
+	//leftUp.position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	//leftUp.texcoord = { 1.0f, 0.0f };
+	//leftUp.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData leftDown;
+	//leftDown.position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	//leftDown.texcoord = { 1.0f, 1.0f };
+	//leftDown.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData rightUp;
+	//rightUp.position = { 1.0f, 0.0f, 0.0f, 1.0f };
+	//rightUp.texcoord = { 0.0f, 1.0f };
+	//rightUp.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData rightDown;
+	//rightDown.position = { 1.0f, 0.5f, 0.0f, 1.0f };
+	//rightDown.texcoord = { 0.0f, 0.0f };
+	//rightDown.normal = { 0.0f, 0.0f, -1.0f };
+
+	//vertexData[0] = leftDown;
+	//vertexData[1] = leftUp;
+	//vertexData[2] = rightDown;
+
+	//vertexData[3] = leftDown;
+	//vertexData[4] = rightUp;
+	//vertexData[5] = rightDown;
+
+	// モデルを読み込み
+	ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
+
+	// 頂点リソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+
+	// 頂点バッファビューを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの仮想のアドレスから使う
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む
 	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
@@ -997,80 +1094,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDate->enableLighting = true;
 
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
-	//リソースの先頭のアドレスから使う
-	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	//使用するリソースサイズは頂点3つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
-	//1頂点当たりのサイズ
-	indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
-
-	//頂点リソースにデータを書き込む
+	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+	uint32_t modelSize = sizeof(VertexData)* modelData.vertices.size();
+	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
+	//vertexResource->Unmap(0, nullptr);
 
-	//頂点リソースにデータを書き込む
-	uint32_t* indexData = nullptr;
-	//書き込むためのアドレスを取得
-	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
-	////左下
-	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[0].texcoord = { 0.0f, 1.0f };
-	////上
-	//vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-	//vertexData[1].texcoord = { 0.5f, 0.0f };
-	////右下
-	//vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[2].texcoord = { 1.0f, 1.0f };
-	////左下
-	//vertexData[3].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[3].texcoord = { 0.0f, 1.0f };
-	////上
-	//vertexData[4].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-	//vertexData[4].texcoord = { 0.5f, 0.0f };
-	////右下
-	//vertexData[5].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-	//vertexData[5].texcoord = { 1.0f, 1.0f };
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
-	VertexData leftUp;
-	leftUp.position = { 0.0f, 0.5f, 0.0f, 1.0f };
-	leftUp.texcoord = { 1.0f, 0.0f };
-	leftUp.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData leftDown;
-	leftDown.position = { 0.0f, 0.0f, 0.0f, 1.0f };
-	leftDown.texcoord = { 1.0f, 1.0f };
-	leftDown.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData rightUp;
-	rightUp.position = { 1.0f, 0.0f, 0.0f, 1.0f };
-	rightUp.texcoord = { 0.0f, 1.0f };
-	rightUp.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData rightDown;
-	rightDown.position = { 1.0f, 0.5f, 0.0f, 1.0f };
-	rightDown.texcoord = { 0.0f, 0.0f };
-	rightDown.normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData[0] = leftDown;
-	vertexData[1] = leftUp;
-	vertexData[2] = rightDown;
-
-	vertexData[3] = leftDown;
-	vertexData[4] = rightUp;
-	vertexData[5] = rightDown;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+	Material* materialDateSprite = nullptr;
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDateSprite));
+	materialDateSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDateSprite->enableLighting = false;
 
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
