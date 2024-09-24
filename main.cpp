@@ -1025,26 +1025,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//書き込むためのアドレスを取得
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
-	//左下
-	vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-	vertexData[0].texcoord = { 0.0f, 1.0f };
-	//上
-	vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-	vertexData[1].texcoord = { 0.5f, 0.0f };
-	//右下
-	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-	vertexData[2].texcoord = { 1.0f, 1.0f };
-	//左下
-	vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
-	vertexData[3].texcoord = { 0.0f, 1.0f };
-	//上
-	vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-	vertexData[4].texcoord = { 0.5f, 0.0f };
-	//右下
-	vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
-	vertexData[5].texcoord = { 1.0f, 1.0f };
+	////左下
+	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	//vertexData[0].texcoord = { 0.0f, 1.0f };
+	////上
+	//vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	//vertexData[1].texcoord = { 0.5f, 0.0f };
+	////右下
+	//vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	//vertexData[2].texcoord = { 1.0f, 1.0f };
+	////左下
+	//vertexData[3].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	//vertexData[3].texcoord = { 0.0f, 1.0f };
+	////上
+	//vertexData[4].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	//vertexData[4].texcoord = { 0.5f, 0.0f };
+	////右下
+	//vertexData[5].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	//vertexData[5].texcoord = { 1.0f, 1.0f };
 
+	VertexData leftUp;
+	leftUp.position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	leftUp.texcoord = { 1.0f, 0.0f };
+	leftUp.normal = { 0.0f, 0.0f, -1.0f };
 
+	VertexData leftDown;
+	leftDown.position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	leftDown.texcoord = { 1.0f, 1.0f };
+	leftDown.normal = { 0.0f, 0.0f, -1.0f };
+
+	VertexData rightUp;
+	rightUp.position = { 1.0f, 0.0f, 0.0f, 1.0f };
+	rightUp.texcoord = { 0.0f, 1.0f };
+	rightUp.normal = { 0.0f, 0.0f, -1.0f };
+
+	VertexData rightDown;
+	rightDown.position = { 1.0f, 0.5f, 0.0f, 1.0f };
+	rightDown.texcoord = { 0.0f, 0.0f };
+	rightDown.normal = { 0.0f, 0.0f, -1.0f };
+
+	vertexData[0] = leftDown;
+	vertexData[1] = leftUp;
+	vertexData[2] = rightDown;
+
+	vertexData[3] = leftDown;
+	vertexData[4] = rightUp;
+	vertexData[5] = rightDown;
 
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
