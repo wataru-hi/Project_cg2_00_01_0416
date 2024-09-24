@@ -845,10 +845,147 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	int vertexCount = 1536;
+	//int vertexCount = 1536;
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
-	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
+	//ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
+
+	////マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
+	//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	////マテリアルにデータを書き込む
+	//Material* materialDate = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	////今回は赤を書き込んでみる
+	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//materialDate->enableLighting = true;
+
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+	//
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
+	////1頂点当たりのサイズ
+	//indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
+
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//
+	////頂点リソースにデータを書き込む
+	//uint32_t* indexData = nullptr;
+	////書き込むためのアドレスを取得
+	//indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	//// 緯度方向の分割数
+	//const int kSubdivision = 16;
+	//// 経度分割1つ分の角度
+	//const float kPhaiEvery = M_PI * 2.0f / float(kSubdivision);
+	//// 緯度分割1つ分の角度
+	//const float kShitaEvery = M_PI / float(kSubdivision);
+	//// 緯度の方向に分割
+	//for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+	//	float shita = -M_PI / 2.0f + kShitaEvery * latIndex;//θ
+
+	//	// 経度の方向に分割しながら線を描く
+	//	for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+	//		uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+	//		float phai = lonIndex * kPhaiEvery;//φ
+
+	//		/*float u = float(lonIndex / kSubdivision);
+	//		float v = 1.0f - float(latIndex / kSubdivision);*/
+
+	//		float u = float(lonIndex) / float(kSubdivision);
+	//		float v = 1.0f - float(latIndex) / float(kSubdivision);
+
+	//		VertexData vLB = {
+	//			{
+	//				cos(shita) * cos(phai),
+	//				sin(shita),
+	//				cos(shita) * sin(phai),
+	//				1.0f				
+	//			},
+	//			{
+	//				u,
+	//				v
+	//			}
+	//		};
+	//		vLB.normal = changeVec3(vLB.position);
+
+	//		VertexData vLT = {
+	//			{
+	//				cos(shita + kShitaEvery) * cos(phai),
+	//				sin(shita + kShitaEvery),
+	//				cos(shita + kShitaEvery) * sin(phai),
+	//				1.0f				
+	//			},
+	//			{
+	//				u,
+	//				v - 1.0f / float(kSubdivision)
+	//			}
+	//		};
+	//		vLT.normal = changeVec3(vLT.position);
+
+	//		VertexData vRB = {
+	//			{
+	//				cos(shita) * cos(phai + kPhaiEvery),
+	//				sin(shita),
+	//				cos(shita) * sin(phai + kPhaiEvery),
+	//				1.0f
+	//			},
+	//			{
+	//				u + 1.0f / float(kSubdivision) ,
+	//				v
+	//			}
+	//		};
+	//		vRB.normal = changeVec3(vRB.position);
+
+	//		VertexData vRT = {
+	//			{
+	//				cos(shita + kShitaEvery) * cos(phai + kPhaiEvery),
+	//				sin(shita + kShitaEvery),
+	//				cos(shita + kShitaEvery) * sin(phai + kPhaiEvery),
+	//				1.0f				
+	//			},
+	//			{
+	//				u + 1.0f / float(kSubdivision),
+	//				v - 1.0f / float(kSubdivision)
+	//			}
+	//		};
+	//		vRT.normal = changeVec3(vRT.position);
+
+	//		// 原点aにデータを入力する
+	//		vertexData[start] = vRT;
+
+	//		// b の頂点データを計算
+	//		vertexData[start + 1] = vRB;
+	//		vertexData[start + 3] = vRB;
+
+	//		// c の頂点データを計算
+	//		vertexData[start + 2] = vLT;
+	//		vertexData[start + 4] = vLT;
+
+	//		// d の頂点データを計算
+	//		vertexData[start + 5] = vLB;
+
+	//		indexData[0] = start + 0; indexData[1] = start + 1; indexData[2] = start + 2;
+	//		indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
+	//	}
+	//}
+
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
@@ -865,16 +1002,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	
+
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
 	//リソースの先頭のアドレスから使う
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
 	//使用するリソースサイズは頂点3つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
 	//1頂点当たりのサイズ
 	indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
 
@@ -882,107 +1019,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	
+
 	//頂点リソースにデータを書き込む
 	uint32_t* indexData = nullptr;
 	//書き込むためのアドレスを取得
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
-	// 緯度方向の分割数
-	const int kSubdivision = 16;
-	// 経度分割1つ分の角度
-	const float kPhaiEvery = M_PI * 2.0f / float(kSubdivision);
-	// 緯度分割1つ分の角度
-	const float kShitaEvery = M_PI / float(kSubdivision);
-	// 緯度の方向に分割
-	for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float shita = -M_PI / 2.0f + kShitaEvery * latIndex;//θ
-
-		// 経度の方向に分割しながら線を描く
-		for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float phai = lonIndex * kPhaiEvery;//φ
-
-			/*float u = float(lonIndex / kSubdivision);
-			float v = 1.0f - float(latIndex / kSubdivision);*/
-
-			float u = float(lonIndex) / float(kSubdivision);
-			float v = 1.0f - float(latIndex) / float(kSubdivision);
-
-			VertexData vLB = {
-				{
-					cos(shita) * cos(phai),
-					sin(shita),
-					cos(shita) * sin(phai),
-					1.0f				
-				},
-				{
-					u,
-					v
-				}
-			};
-			vLB.normal = changeVec3(vLB.position);
-
-			VertexData vLT = {
-				{
-					cos(shita + kShitaEvery) * cos(phai),
-					sin(shita + kShitaEvery),
-					cos(shita + kShitaEvery) * sin(phai),
-					1.0f				
-				},
-				{
-					u,
-					v - 1.0f / float(kSubdivision)
-				}
-			};
-			vLT.normal = changeVec3(vLT.position);
-
-			VertexData vRB = {
-				{
-					cos(shita) * cos(phai + kPhaiEvery),
-					sin(shita),
-					cos(shita) * sin(phai + kPhaiEvery),
-					1.0f
-				},
-				{
-					u + 1.0f / float(kSubdivision) ,
-					v
-				}
-			};
-			vRB.normal = changeVec3(vRB.position);
-
-			VertexData vRT = {
-				{
-					cos(shita + kShitaEvery) * cos(phai + kPhaiEvery),
-					sin(shita + kShitaEvery),
-					cos(shita + kShitaEvery) * sin(phai + kPhaiEvery),
-					1.0f				
-				},
-				{
-					u + 1.0f / float(kSubdivision),
-					v - 1.0f / float(kSubdivision)
-				}
-			};
-			vRT.normal = changeVec3(vRT.position);
-
-			// 原点aにデータを入力する
-			vertexData[start] = vRT;
-
-			// b の頂点データを計算
-			vertexData[start + 1] = vRB;
-			vertexData[start + 3] = vRB;
-
-			// c の頂点データを計算
-			vertexData[start + 2] = vLT;
-			vertexData[start + 4] = vLT;
-
-			// d の頂点データを計算
-			vertexData[start + 5] = vLB;
-
-			indexData[0] = start + 0; indexData[1] = start + 1; indexData[2] = start + 2;
-			indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
-		}
-	}
+	//左下
+	vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	vertexData[0].texcoord = { 0.0f, 1.0f };
+	//上
+	vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	vertexData[1].texcoord = { 0.5f, 0.0f };
+	//右下
+	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	vertexData[2].texcoord = { 1.0f, 1.0f };
+	//左下
+	vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
+	vertexData[3].texcoord = { 0.0f, 1.0f };
+	//上
+	vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexData[4].texcoord = { 0.5f, 0.0f };
+	//右下
+	vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
+	vertexData[5].texcoord = { 1.0f, 1.0f };
 
 
 
@@ -1145,6 +1205,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	scissorRect.right = kClientWidth;
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
+
+	Transfrom
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 10.0f} };
