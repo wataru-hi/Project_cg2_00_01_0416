@@ -1076,7 +1076,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
 
 	// 頂点リソースを作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -1085,7 +1085,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む
 	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
@@ -1097,19 +1097,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
-	uint32_t modelSize = sizeof(VertexData)* modelData.vertices.size();
-	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
-	//vertexResource->Unmap(0, nullptr);
-
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-	Material* materialDateSprite = nullptr;
-	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDateSprite));
-	materialDateSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDateSprite->enableLighting = false;
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size()); // 頂点データをリソースにコピー
+	vertexResource->Unmap(0, nullptr);
 
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
@@ -1582,7 +1571,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	CloseHandle(fenceEvent);
 	indexResourceSprite->Release();
 	vertexResourceSprite->Release();
-	indexResource->Release();
+	//indexResource->Release();
 	transformationMatrixResourceSprite->Release();
 	fence->Release();
 	rtvDescriptorHeap->Release();
