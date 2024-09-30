@@ -1502,8 +1502,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//DirectX::ScratchImage mipImage2 = LoadTexture(modelData.material.textureFilepPath);
 
-			commandList->DrawInstanced(6, 1, 0, 0);
-		//	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);//VBVを設定0400
