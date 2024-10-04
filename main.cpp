@@ -87,6 +87,15 @@ struct ModelData {
 	MaterialData material;
 };
 
+enum BlendMode {
+	BlendModeNone,//		ブレンドを行わない
+	BlendModeNormal,//		通常のブレンド (Src * SrcA + Dest * (1 - SrcA))
+	BlendModeAdd,//			加算 (Src * SrcA + Dest * 1)
+	BlendModeSubtract,//	減算 (Dest * 1 - Src * SrcA)
+	BlendModeMultiply,//	乗算 (Src * 0 + Dest * Src)
+	BlendModeScreen,//		スクリーン (Src * (1 - Dest) + Dest * 1)
+};
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
@@ -811,9 +820,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//BlendStateの設定
 	D3D12_BLEND_DESC blendDesc{};
-	//すべての色要素を書き込む
-	blendDesc.RenderTarget[0].RenderTargetWriteMask =
-		D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	//ResiterzerStartの設定
 	D3D12_RASTERIZER_DESC rasterzerDesc{};
@@ -1468,7 +1482,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);//0501
 
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());//0400
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
