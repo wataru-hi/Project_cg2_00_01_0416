@@ -821,13 +821,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//BlendStateの設定
 	D3D12_BLEND_DESC blendDesc{};
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	/*
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;*/
 
 	//ResiterzerStartの設定
 	D3D12_RASTERIZER_DESC rasterzerDesc{};
@@ -1011,40 +1012,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//	}
 	//}
 
-	//// モデルを読み込み
-	//ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
+	// モデルを読み込み
+	ModelData modelData = LoadObjFile("Resources/fence", "fence.obj");
 
-	//// 頂点リソースを作成
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	// 頂点リソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
-	//// 頂点バッファビューを作成する
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの仮想のアドレスから使う
-	//vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
-	//vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
-
-	////マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
-	////マテリアルにデータを書き込む
-	//Material* materialDate = nullptr;
-	////書き込むためのアドレスを取得
-	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	////今回は赤を書き込んでみる
-	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	//materialDate->enableLighting = true;
-
-	//// 頂点リソースにデータを書き込む
-	//VertexData* vertexData = nullptr;
-	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
-	//uint32_t modelSize = sizeof(VertexData)* modelData.vertices.size();
-	//std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
-	////vertexResource->Unmap(0, nullptr);
-
-	int vertexCount = 6;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
-	// = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
+	// 頂点バッファビューを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの仮想のアドレスから使う
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 
 	//マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
@@ -1056,64 +1034,87 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDate->enableLighting = true;
 
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//使用するリソースサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
-	//リソースの先頭のアドレスから使う
-	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	//使用するリソースサイズは頂点3つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
-	//1頂点当たりのサイズ
-	indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
-
-	//頂点リソースにデータを書き込む
+	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	
-	//頂点リソースにデータを書き込む
-	uint32_t* indexData = nullptr;
-	//書き込むためのアドレスを取得
-	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+	uint32_t modelSize = sizeof(VertexData)* modelData.vertices.size();
+	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
+	//vertexResource->Unmap(0, nullptr);
 
-	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
-	indexData[3] = 1; indexData[4] = 4; indexData[5] = 2;
+	//int vertexCount = 6;
 
-	VertexData hidariSita;
-	hidariSita.position = { 0.0f, 1.0f, 0.0f, 1.0f };
-	hidariSita.texcoord = { 0.0f, -1.0f };
-	hidariSita.normal = { 0.0f, 0.0f, -1.0f };
+	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
+	//// = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = CreateBufferResource(device, sizeof(uint32_t) * vertexCount);
 
-	VertexData hidariue;
-	hidariue.position = { 0.0f, 0.0f, 0.0f, 1.0f };
-	hidariue.texcoord = { 0.0f, 0.0f };
-	hidariue.normal = { 0.0f, 0.0f, -1.0f };
+	////マテリアル用のリソースを作る。今回はColor1つ分のサイズを用意する
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
+	////マテリアルにデータを書き込む
+	//Material* materialDate = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	////今回は赤を書き込んでみる
+	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//materialDate->enableLighting = true;
 
-	VertexData migiUe;
-	migiUe.position = { 1.0f, 0.0f, 0.0f, 1.0f };
-	migiUe.texcoord = { -1.0f, 0.0f };
-	migiUe.normal = { 0.0f, 0.0f, -1.0f };
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+	//
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW indexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	////使用するリソースサイズは頂点3つ分のサイズ
+	//indexBufferView.SizeInBytes = sizeof(uint32_t) * vertexCount;
+	////1頂点当たりのサイズ
+	//indexBufferView.StrideInBytes = DXGI_FORMAT_R32_UINT;
 
-	VertexData migiSita;
-	migiSita.position = { 1.0f, 1.0f, 0.0f, 1.0f };
-	migiSita.texcoord = { -1.0f, -1.0f };
-	migiSita.normal = { 0.0f, 0.0f, -1.0f };
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//
+	////頂点リソースにデータを書き込む
+	//uint32_t* indexData = nullptr;
+	////書き込むためのアドレスを取得
+	//indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
-	vertexData[0] = hidariSita;
-	vertexData[1] = hidariue;
-	vertexData[2] = migiSita;
+	//indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
+	//indexData[3] = 1; indexData[4] = 4; indexData[5] = 2;
 
-	vertexData[3] = hidariue;
-	vertexData[4] = migiUe;
-	vertexData[5] = migiSita;
+	//VertexData hidariSita;
+	//hidariSita.position = { 0.0f, 1.0f, 0.0f, 1.0f };
+	//hidariSita.texcoord = { 0.0f, -1.0f };
+	//hidariSita.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData hidariue;
+	//hidariue.position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	//hidariue.texcoord = { 0.0f, 0.0f };
+	//hidariue.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData migiUe;
+	//migiUe.position = { 1.0f, 0.0f, 0.0f, 1.0f };
+	//migiUe.texcoord = { -1.0f, 0.0f };
+	//migiUe.normal = { 0.0f, 0.0f, -1.0f };
+
+	//VertexData migiSita;
+	//migiSita.position = { 1.0f, 1.0f, 0.0f, 1.0f };
+	//migiSita.texcoord = { -1.0f, -1.0f };
+	//migiSita.normal = { 0.0f, 0.0f, -1.0f };
+
+	//vertexData[0] = hidariSita;
+	//vertexData[1] = hidariue;
+	//vertexData[2] = migiSita;
+
+	//vertexData[3] = hidariue;
+	//vertexData[4] = migiUe;
+	//vertexData[5] = migiSita;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
@@ -1155,18 +1156,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	indexDataSprite[3] = 1; indexDataSprite[4] = 4; indexDataSprite[5] = 2;
 
+	VertexData hidariSita;
 	hidariSita.position = { 0.0f, 360.0f, 0.0f, 1.0f };
 	hidariSita.texcoord = { 0.0f, 1.0f };
 	hidariSita.normal = { 0.0f, 0.0f, -1.0f };
 
+	VertexData hidariue;
 	hidariue.position = { 0.0f, 0.0f, 0.0f, 1.0f };
 	hidariue.texcoord = { 0.0f, 0.0f };
 	hidariue.normal = { 0.0f, 0.0f, -1.0f };
 
+	VertexData migiUe;
 	migiUe.position = { 640.0f, 0.0f, 0.0f, 1.0f };
 	migiUe.texcoord = { 1.0f, 0.0f };
 	migiUe.normal = { 0.0f, 0.0f, -1.0f };
 
+	VertexData migiSita;
 	migiSita.position = { 640.0f, 360.0f, 0.0f, 1.0f };
 	migiSita.texcoord = { 1.0f, 1.0f };
 	migiSita.normal = { 0.0f, 0.0f, -1.0f };
@@ -1193,7 +1198,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	const uint32_t descripotrSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	//DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("resources/fence/fence.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CreateTextureResouce(device, metadata);
 	UploadTextureData(textureResource, mipImages);
@@ -1353,9 +1359,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			LightIntensity = directrionaLightData->intensity;
 
 			// X、Y、Zの位置をスライダーで変更
-			ImGui::SliderFloat("X Position", &transform.translate.x, -10.0f, 10.0f);
-			ImGui::SliderFloat("Y Position", &transform.translate.y, -10.0f, 10.0f);
-			ImGui::DragFloat("Z Position", &transform.translate.z, 0.1f, 1.0f);
+			ImGui::SliderFloat("X Position", &transform.rotate.x, -10.0f, 10.0f);
+			ImGui::SliderFloat("Y Position", &transform.rotate.y, -10.0f, 10.0f);
+			ImGui::DragFloat("Z Position", &transform.rotate.z, 0.1f, 1.0f);
 
 			ImGui::DragFloat3("spriteS", TransformUi[0], 0.1f, 1.0f);
 			ImGui::DragFloat3("spriteR", TransformUi[1], 0.1f, 1.0f);
@@ -1472,8 +1478,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//DirectX::ScratchImage mipImage2 = LoadTexture(modelData.material.textureFilepPath);
 
-			commandList->DrawInstanced(vertexCount, 1, 0, 0);
-			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			//commandList->DrawInstanced(vertexCount, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);//VBVを設定0400
