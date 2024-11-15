@@ -19,6 +19,8 @@
 
 #include <wrl.h>
 
+#include"WinApp.h"
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -495,42 +497,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 
-	WNDCLASS wc{};
-	//ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-	//ウィンドウクラス名
-	wc.lpszClassName = L"CG2WindowClass";
-	//インスタンスハンドル
-	wc.hInstance = GetModuleHandle(nullptr);
-	//カーソル
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	//WNDCLASS wc{};
+	////ウィンドウプロシージャ
+	//wc.lpfnWndProc = WindowProc;
+	////ウィンドウクラス名
+	//wc.lpszClassName = L"CG2WindowClass";
+	////インスタンスハンドル
+	//wc.hInstance = GetModuleHandle(nullptr);
+	////カーソル
+	//wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-	//ウィンドウクラスを登録する
-	RegisterClass(&wc);
+	////ウィンドウクラスを登録する
+	//RegisterClass(&wc);
 
-	//クライアントの領域サイズ
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
+	////クライアントの領域サイズ
+	//const int32_t kClientWidth = 1280;
+	//const int32_t kClientHeight = 720;
 
-	//ウィンドウクラスを表す構造体にクライアント領域を入れる
-	RECT wrc = { 0, 0, kClientWidth, kClientHeight };
+	////ウィンドウクラスを表す構造体にクライアント領域を入れる
+	//RECT wrc = { 0, 0, kClientWidth, kClientHeight };
 
-	//クラインと領域をもとに実際のサイズにwrcを変更してもらう
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	////クラインと領域をもとに実際のサイズにwrcを変更してもらう
+	//AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
-	HWND hwnd = CreateWindow(
-		wc.lpszClassName,		//利用するクラス名
-		L"CG2",					//タイトルバーの文字（なんでもいい)
-		WS_OVERLAPPEDWINDOW,	//よく見るウィンドウスタイル
-		CW_USEDEFAULT,			//表示X座標
-		CW_USEDEFAULT,			//表示Y座標
-		wrc.right - wrc.left,	//ウィンドウ縦幅
-		wrc.bottom - wrc.top,	//ウィンドウ横幅
-		nullptr,				//親ウィンドウハンドル
-		nullptr,				//メニューウハンドル
-		wc.hInstance,			//インスタンスハンドル
-		nullptr					//メニューウハンドル
-	);
+	//HWND hwnd = CreateWindow(
+	//	wc.lpszClassName,		//利用するクラス名
+	//	L"CG2",					//タイトルバーの文字（なんでもいい)
+	//	WS_OVERLAPPEDWINDOW,	//よく見るウィンドウスタイル
+	//	CW_USEDEFAULT,			//表示X座標
+	//	CW_USEDEFAULT,			//表示Y座標
+	//	wrc.right - wrc.left,	//ウィンドウ縦幅
+	//	wrc.bottom - wrc.top,	//ウィンドウ横幅
+	//	nullptr,				//親ウィンドウハンドル
+	//	nullptr,				//メニューウハンドル
+	//	wc.hInstance,			//インスタンスハンドル
+	//	nullptr					//メニューウハンドル
+	//);
+
+	WinApp* winApp = nullptr;
+	winApp = new WinApp();
+	winApp->Initialize();
+
+	
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug1> debugContoroller = nullptr;
@@ -543,8 +551,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif // _DEBUG
 
 
-	//ウィンドウを表示する
-	ShowWindow(hwnd, SW_SHOW);
+	////ウィンドウを表示する
+	//ShowWindow(hwnd, SW_SHOW);
 
 	//DXGIファクトリーの生成
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
@@ -629,7 +637,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	Input* input = nullptr;
 	input = new Input();
-	input->Initialize(wc.hInstance, hwnd);
+	input->Initialize(winApp);
 
 	//コマンドキューを生成する
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
@@ -653,20 +661,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//スワップチェーンを生成する
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = kClientWidth;//画面の幅と高さをクライアントと同じにする
-	swapChainDesc.Height = kClientHeight;
+	swapChainDesc.Width = winApp->kClientWidth;//画面の幅と高さをクライアントと同じにする
+	swapChainDesc.Height = winApp->kClientHeight;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;//色の形式
 	swapChainDesc.SampleDesc.Count = 1;//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;//描画のターゲット
 	swapChainDesc.BufferCount = 2;//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;//モニタに移したら中身を破棄
 	//コマンドキュー,ウィンドウハンドル,設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 
 	//=======================
 	//depthStencilTextureをウィンドウサイズで作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce = createDepthTextureResource(device, kClientWidth, kClientHeight);
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce = createDepthTextureResource(device, winApp->kClientWidth, winApp->kClientHeight);
 	//=======================
 
 	//ディスクリプターヒープの生成
@@ -1179,8 +1187,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = kClientWidth;
-	viewport.Height = kClientHeight;
+	viewport.Width = winApp->kClientWidth;
+	viewport.Height = winApp->kClientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -1190,9 +1198,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	D3D12_RECT scissorRect{};
 	//基本的にビューポートと同じ矩形が個性されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = kClientWidth;
+	scissorRect.right = winApp->kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kClientHeight;
+	scissorRect.bottom = winApp->kClientHeight;
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 10.0f} };
@@ -1223,7 +1231,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplWin32_Init(winApp->GetHwnd());
 	ImGui_ImplDX12_Init(device.Get(),
 		swapChainDesc.BufferCount,
 		rtvDesc.Format,
@@ -1322,14 +1330,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Matrix4x4 worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAfineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatrix = makePerspectiveMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 projectionMatrix = makePerspectiveMatrix(0.45f, float(winApp->kClientWidth) / float(winApp->kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionmatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			wvpData->WVP = worldViewProjectionmatrix;
 			wvpData->World = worldMatrix;
 
 			Matrix4x4 worldMatrixSprite = MakeAfineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = makeOrthogphicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 projectionMatrixSprite = makeOrthogphicMatrix(0.0f, 0.0f, float(winApp->kClientWidth), float(winApp->kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionmatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 			transfromationMatrixDataSprite->World = worldMatrixSprite;
@@ -1462,11 +1470,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	delete input;
+	winApp = nullptr;
+	winApp->Finalize();
+	delete winApp;
+	
 	CloseHandle(fenceEvent);
 
-	CloseWindow(hwnd);
-
-	CoUninitialize();
 
 	return 0;
 }
