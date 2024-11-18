@@ -9,7 +9,7 @@ using namespace Microsoft::WRL;
 
 void Input::Initialize(WinApp* winApp)
 {
-	//this->winApp_ = winApp;
+	winApp_ = winApp;
 	HRESULT result;
 
 	// DirectInputのインスタンス生成
@@ -31,8 +31,6 @@ void Input::Initialize(WinApp* winApp)
 
 void Input::Update()
 {
-	HRESULT result;
-
 	memcpy(keyPre, key, sizeof(key));
 
 	keyboard->Acquire();
