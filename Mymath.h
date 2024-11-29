@@ -376,3 +376,28 @@ Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& w
 
 	return result;
 }
+
+Vector3& operator +=(Vector3& ihv, const Vector3& rhv)
+{
+	ihv.x += rhv.x;
+	ihv.y += rhv.y;
+	ihv.z += rhv.z;
+
+	return ihv;
+}
+
+Vector3& operator *=(Vector3& v, float s)
+{
+	v.x *= s;
+	v.y *= s;
+	v.z *= s;
+
+	return v;
+}
+
+Vector3& operator *=(const Vector3& v, float s)
+{
+	Vector3 temp(v);
+
+	return temp *= s;
+}

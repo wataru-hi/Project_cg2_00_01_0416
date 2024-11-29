@@ -87,6 +87,12 @@ struct ModelData {
 	MaterialData material;
 };
 
+struct  Particle
+{
+	Transform transform;
+	Vector3 velocity;
+};
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
@@ -1261,6 +1267,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		transforms[index].scale = { 1.0f, 1.0f, 1.0f };
 		transforms[index].rotate = { 0.0f, 0.0f, 0.0f };
 		transforms[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+	}
+
+	for (uint32_t index = 0; index < kNumInstance; ++index)
+	{
+
 	}
 
 	MSG msg{};
