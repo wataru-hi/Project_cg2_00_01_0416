@@ -42,7 +42,9 @@ public:
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index); // SRVのGPUデスクリプタハンドルを取得
 
+	void PreDraw();
 
+	void PostDraw();
 private:
 	WinApp* winApp_ = nullptr;
 
@@ -77,7 +79,7 @@ private:
 	//スワップチェーンリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// ディスクリプタハンドルを計算
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle{};
 
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -85,6 +87,8 @@ private:
 
 	//Fence
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+	uint64_t fenceValue = 0;
+	
 
 	//ビューポート矩形
 	D3D12_VIEWPORT viewport{};
@@ -95,6 +99,10 @@ private:
 	//dxcCompilerを初期化
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
+
+	//TranssitionBarrier
+	D3D12_RESOURCE_BARRIER barrier{};
+	
 
 	//デバイスの初期化
 	void DeviceInitialize(); // D3D12デバイスを初期化する

@@ -291,6 +291,86 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descripotrSizeSRV, index);
 }
 
+void DirectXCommon::PreDraw()
+{
+	//これから書き込むバッファのインデックスを取得する
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	//TranssitionBarrierの設定
+	//今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	//noneにしておく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	//バリアを張る対象のリソース。現在のバックバッファに対して行う
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+
+	//偏移前(現在)のResourceState
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+	//偏移後のResourceState
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	//TransitionBarrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+
+	// 描画先のRTVとDSVを設定する
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandle[backBufferIndex], false, &dsvHandle);
+	//指定した色で画面全体をクリアする
+	float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f }; //青っぽい色	RGBAの順
+	commandList->ClearRenderTargetView(rtvHandle[backBufferIndex], clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	//描画用のDescriptorHeapの設定
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptoHeaps[] = { srvDescriptorHeap };
+	commandList->SetDescriptorHeaps(1, descriptoHeaps->GetAddressOf());
+
+	commandList->RSSetViewports(1, &viewport);//viewportを設定
+
+	commandList->RSSetScissorRects(1, &scissorRect);//scirssorを設定
+}
+
+void DirectXCommon::PostDraw()
+{
+	//バックバッファの番号取得
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	//今回はRenderTargetからPresentにする
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		//TransitionBarrierを張る
+		commandList->ResourceBarrier(1, &barrier);
+
+		//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCloseすること
+		hr = commandList->Close();
+		assert(SUCCEEDED(hr));
+
+		//GPUにコマンドリストの実行を行わせる
+		Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
+		commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+		//GPUとOSに画面の交換を行うよう通知する
+		swapChain->Present(1, 0);
+
+		//Fenceの値を更新
+		fenceValue++;
+		//GPUがここまでたどり着いたとき、Fenceの値を代入するようにSignalを送る
+		commandQueue->Signal(fence.Get(), fenceValue);
+		//Fenceの値が指定したSignal値にたどり着いているか確認する
+		//GetCompleteValueの初期値はFence作成時に渡した初期値
+		if (fence->GetCompletedValue() < fenceValue)
+		{
+			//指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを指定する
+			fence->SetEventOnCompletion(fenceValue, fenceEvent);
+			//イベントを待つ
+			WaitForSingleObject(fenceEvent, INFINITE);
+		}
+
+		//次のフレーム用のコマンドリストを準備
+		hr = commandAllocator->Reset();
+		assert(SUCCEEDED(hr));
+		hr = commandList->Reset(commandAllocator.Get(), nullptr);
+		assert(SUCCEEDED(hr));
+}
+
 void DirectXCommon::InitializeDepthView()
 {
 	//depthStencilTextureをウィンドウサイズで作成
@@ -308,8 +388,6 @@ void DirectXCommon::CreateFance()
 {
 	HRESULT hr;
 
-	//初期値0でFenceを作る
-	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 }
