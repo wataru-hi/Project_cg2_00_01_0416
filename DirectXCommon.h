@@ -2,8 +2,13 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include <wrl.h>
+#include "externals/DirectXTex/DirectXTex.h" // 追加
+#include <dxcapi.h> // 追加
+#include <wrl/client.h> // 修正
 #include <array>
+#include <string> // 追加
+#include <memory> // 追加
+#include <cstdint> // 追加
 
 #include "WinApp.h"
 
@@ -42,9 +47,42 @@ public:
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index); // SRVのGPUデスクリプタハンドルを取得
 
+	/// <summary>
+/// テクスチャリソースの生成
+/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(
+		ID3D12Device* device, const DirectX::TexMetadata& metadata);
+
+	/// <summary>
+	/// テクスチャデータの転送
+	/// </summary>
+	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+
+	/// <summary>
+/// テクスチャファイルの読み込み
+/// </summary>
+/// <param name="filePath">テクスチャファイルのパス</param>
+/// <returns>画像データ</returns>
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath, const wchar_t* profile
+	);
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
 	void PreDraw();
 
 	void PostDraw();
+
+
+
+	// getter
+	ID3D12Device* GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() const { return srvDescriptorHeap; }
+	uint32_t GetDescripotrSizeSRV() const { return descripotrSizeSRV; }
+
 private:
 	WinApp* winApp_ = nullptr;
 
@@ -88,7 +126,7 @@ private:
 	//Fence
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	uint64_t fenceValue = 0;
-	
+
 
 	//ビューポート矩形
 	D3D12_VIEWPORT viewport{};
@@ -102,7 +140,8 @@ private:
 
 	//TranssitionBarrier
 	D3D12_RESOURCE_BARRIER barrier{};
-	
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
+
 
 	//デバイスの初期化
 	void DeviceInitialize(); // D3D12デバイスを初期化する
