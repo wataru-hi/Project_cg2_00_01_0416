@@ -194,10 +194,12 @@ void DirectXCommon::CreateDepthBuffer()
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
 		&resourceDesc, // Resourceの設定
-		D3D12_RESOURCE_STATE_DEPTH_WRITE, // 深度値を書き込む状態にしておく
+		D3D12_RESOURCE_STATE_DEPTH_WRITE, // 深度値を書き込む状態にしておく <--- 重要！
 		&depthClearValue, // Clear最適値
-		IID_PPV_ARGS(&resource) // 作成するResourceポインタへのポインタ
+		IID_PPV_ARGS(&depthStencilResouce) // 作成するResourceポインタへのポインタ <--- 修正
 	);
+
+	depthStencilResouce = resource;
 
 	assert(SUCCEEDED(hr));
 
@@ -347,6 +349,7 @@ void DirectXCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::Sc
 
 DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 {
+	Log(filePath);
 	//テクスチャファイルを選んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = ConvertString(filePath);
@@ -356,12 +359,15 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	DirectX::ScratchImage mipImages{};
 	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
 
+	Log("GenerateMipMaps failed: " + std::to_string(hr));
+
 	//ミップマップ月のデータを返す
 	return mipImages;
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {
+
 	//ここからシェーダーをコンパイルする旨をログに出す
 	Log(ConvertString(std::format(L"begin Compiler, path:{}, profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
@@ -446,26 +452,22 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 void DirectXCommon::PreDraw()
 {
-	//これから書き込むバッファのインデックスを取得する
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	//TranssitionBarrierの設定
-	//今回のバリアはTransition
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	//noneにしておく
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	//バリアを張る対象のリソース。現在のバックバッファに対して行う
-	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+    // バックバッファのみのリソースバリア
+    D3D12_RESOURCE_BARRIER barrier{};  // barrier変数の再利用
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	//偏移前(現在)のResourceState
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+    commandList->ResourceBarrier(1, &barrier);
 
-	//偏移後のResourceState
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	//TransitionBarrierを張る
-	commandList->ResourceBarrier(1, &barrier);
 
 	// 描画先のRTVとDSVを設定する
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();  // rtvHandle を正しく取得
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 	//指定した色で画面全体をクリアする
@@ -531,15 +533,21 @@ void DirectXCommon::PostDraw()
 
 void DirectXCommon::InitializeDepthView()
 {
-	//depthStencilTextureをウィンドウサイズで作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce;
-
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	//DSVheapの先頭に
 	device->CreateDepthStencilView(depthStencilResouce.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+	// CreateDepthStencilView の前にログ出力で確認
+    Log("depthStencilResouce in InitializeDepthView: " + std::to_string(reinterpret_cast<uintptr_t>(depthStencilResouce.Get())));
+
+    device->CreateDepthStencilView(
+        depthStencilResouce.Get(),
+        &dsvDesc,
+        dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()
+    );
 }
 
 void DirectXCommon::CreateFance()
@@ -552,8 +560,8 @@ void DirectXCommon::CreateFance()
 
 void DirectXCommon::InitializeViewPort()
 {
-	viewport.Width = winApp_->kClientWidth;
-	viewport.Height = winApp_->kClientHeight;
+	viewport.Width = static_cast<float>(winApp_->kClientWidth);
+	viewport.Height = static_cast<float>(winApp_->kClientHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;

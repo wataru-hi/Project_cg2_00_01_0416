@@ -142,7 +142,7 @@ private:
 	D3D12_RESOURCE_BARRIER barrier{};
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
-
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce; // 深度ステンシルリソース
 	//デバイスの初期化
 	void DeviceInitialize(); // D3D12デバイスを初期化する
 

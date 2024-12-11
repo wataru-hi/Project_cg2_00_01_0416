@@ -22,6 +22,12 @@
 #include"DirectXCommon.h"
 #include"WinApp.h"
 
+#include "Logger.h"
+using namespace Logger;
+
+#include "StringUtility.h"
+using namespace StringUtility;
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -92,59 +98,59 @@ struct ModelData {
 	MaterialData material;
 };
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
-	{
-		return true;
-	}
+//LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+//{
+//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
+//	{
+//		return true;
+//	}
+//
+//	//メッセージに対してゲーム固有の処理を行う
+//	switch (msg) {
+//		//ウィンドウが破棄された
+//	case WM_DESTROY:
+//		//OSに対して、アプリの終了を伝える
+//		PostQuitMessage(0);
+//		return 0;
+//	}
+//
+//	//標準のメッセージ処理を行う
+//	return DefWindowProc(hwnd, msg, wparam, lparam);
+//}
+//
+//std::wstring ConvertString(const std::string& str) {//StringUtility用ファイルを作成
+//	if (str.empty()) {
+//		return std::wstring();
+//	}
+//
+//	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+//	if (sizeNeeded == 0) {
+//		return std::wstring();
+//	}
+//	std::wstring result(sizeNeeded, 0);
+//	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+//	return result;
+//}
 
-	//メッセージに対してゲーム固有の処理を行う
-	switch (msg) {
-		//ウィンドウが破棄された
-	case WM_DESTROY:
-		//OSに対して、アプリの終了を伝える
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	//標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-
-std::wstring ConvertString(const std::string& str) {//StringUtility用ファイルを作成
-	if (str.empty()) {
-		return std::wstring();
-	}
-
-	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
-	if (sizeNeeded == 0) {
-		return std::wstring();
-	}
-	std::wstring result(sizeNeeded, 0);
-	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
-	return result;
-}
-
-std::string ConvertString(const std::wstring& str) {
-	if (str.empty()) {
-		return std::string();
-	}
-
-	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
-	if (sizeNeeded == 0) {
-		return std::string();
-	}
-	std::string result(sizeNeeded, 0);
-	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
-	return result;
-}
+//std::string ConvertString(const std::wstring& str) {
+//	if (str.empty()) {
+//		return std::string();
+//	}
+//
+//	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+//	if (sizeNeeded == 0) {
+//		return std::string();
+//	}
+//	std::string result(sizeNeeded, 0);
+//	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+//	return result;
+//}
 
 
 
-void Log(const std::string& message) {
-	OutputDebugStringA(message.c_str());
-}
+//void Log(const std::string& message) {
+//	OutputDebugStringA(message.c_str());
+//}
 
 //DirectXCommonのCompileShaderに移植
 //IDxcBlob* CompileShader
@@ -401,7 +407,10 @@ MaterialData LoadmaterialTemplateFile(const std::string& directoryPath, const st
 		//identifileに応じた処理
 		if (identifile == "map_kd") {
 			std::string textureFilename;
-			s >> textureFilename;
+			if (!(s >> textureFilename)) { // ファイル名の読み込みが成功したかどうかを確認する
+				Log(".mtl ファイルのテクスチャファイル名を読み込めませんでした");
+				continue; // この行をスキップするか、エラーを適切に処理する
+			}
 
 			materialData.textureFilepPath = directoryPath + "/" + textureFilename;
 		}
@@ -868,11 +877,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rasterzerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//shaderをコンパイルする
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"Resources/shader/Object3d.VS.hlsl",L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"Resources/shader/Object3d.VS.hlsl",L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"Resources/shader/Object3d.PS.hlsl",
-		L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"Resources/shader/Object3d.PS.hlsl",L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -1154,7 +1162,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//const uint32_t descripotrSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata);
 	dxCommon->UploadTextureData(textureResource.Get(), mipImages);
@@ -1171,7 +1179,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetGPUDescriptorHandle(dxCommon->GetSrvDescriptorHeap(), dxCommon->GetDescripotrSizeSRV(), 2);
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture("resources/monsterBall.png");
+	DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture("Resources/monsterBall.png");
 	const DirectX::TexMetadata metadata2 = mipImages2.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata2);
 	dxCommon->UploadTextureData(textureResource2.Get(), mipImages2);
