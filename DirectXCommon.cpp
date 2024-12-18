@@ -44,15 +44,20 @@ void DirectXCommon::PreDraw()
 {
 	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	// バックバッファのみのリソースバリア
-	D3D12_RESOURCE_BARRIER barrier{};  // barrier変数の再利用
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	//barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
+	//今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	//noneにしておく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	//バリアを張る対象のリソース。現在のバックバッファに対して行う
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+
+	//偏移前(現在)のResourceState
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+	//偏移後のResourceState
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	//TransitionBarrierを張る
 	commandList->ResourceBarrier(1, &barrier);
 
 
@@ -84,6 +89,7 @@ void DirectXCommon::PostDraw()
 	//バックバッファの番号取得
 	//backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
+	//画面に描く処理はすべて終わり、画面に移すので、状態を遷移
 	//今回はRenderTargetからPresentにする
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -270,7 +276,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthBuffer()
 	depthClearValue.DepthStencil.Depth = 1.0f; // 1.0f (最大値) でクリア
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // フォーマット。Resourceと合わせる
 
-	HRESULT hr =  device->CreateCommittedResource(
+	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
 		&resourceDesc, // Resourceの設定
@@ -434,18 +440,18 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 
 	if (FAILED(hr)) {
-        Log("Failed to load image: " + std::to_string(hr));
-        return {};
-    }
+		Log("Failed to load image: " + std::to_string(hr));
+		return {};
+	}
 
 	//ミップマップの生成
 	DirectX::ScratchImage mipImages{};
 	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
 
 	if (FAILED(hr)) {
-        Log("GenerateMipMaps failed: " + std::to_string(hr));
-        throw std::runtime_error("GenerateMipMaps failed!");
-    }
+		Log("GenerateMipMaps failed: " + std::to_string(hr));
+		throw std::runtime_error("GenerateMipMaps failed!");
+	}
 
 	//ミップマップ月のデータを返す
 	return mipImages;
@@ -542,18 +548,18 @@ void DirectXCommon::InitializeDepthView()
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	
+
 	//DSVheapの先頭に
 	device->CreateDepthStencilView(depthStencilResouce.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	// CreateDepthStencilView の前にログ出力で確認
-    Log("depthStencilResouce in InitializeDepthView: " + std::to_string(reinterpret_cast<uintptr_t>(depthStencilResouce.Get())));
+	Log("depthStencilResouce in InitializeDepthView: " + std::to_string(reinterpret_cast<uintptr_t>(depthStencilResouce.Get())));
 
-    device->CreateDepthStencilView(
-        depthStencilResouce.Get(),
-        &dsvDesc,
-        dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()
-    );
+	device->CreateDepthStencilView(
+		depthStencilResouce.Get(),
+		&dsvDesc,
+		dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()
+	);
 }
 
 void DirectXCommon::CreateFance()
