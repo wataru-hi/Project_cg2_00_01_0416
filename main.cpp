@@ -1430,7 +1430,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//実際のdxCommon->GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 
-		dxCommon->PreDraw();
+		dxCommon->PostDraw();
 
 
 	}

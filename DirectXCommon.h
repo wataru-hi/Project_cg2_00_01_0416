@@ -18,6 +18,10 @@ class DirectXCommon
 public:
 	void Initialize(WinApp* winApp); // DirectXの初期化処理全体
 
+	void PreDraw();
+
+	void PostDraw();
+
 	//各種でスクリプターヒープの生成
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> createDescriptorHeap(
 		D3D12_DESCRIPTOR_HEAP_TYPE heapType,
@@ -70,10 +74,6 @@ public:
 	);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
-
-	void PreDraw();
-
-	void PostDraw();
 
 
 
@@ -153,7 +153,7 @@ private:
 	void CreateSwapChain(); // スワップチェーンを生成する
 
 	//深度バッファの生成
-	void CreateDepthBuffer(); // 深度バッファを生成する
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthBuffer(); // 深度バッファを生成する
 
 	void CreatVariousDescriptorHeaps(); // 各種デスクリプタヒープ (RTV, DSV, SRVなど) を作成する
 
