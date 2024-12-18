@@ -42,7 +42,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 void DirectXCommon::PreDraw()
 {
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
 	// バックバッファのみのリソースバリア
 	D3D12_RESOURCE_BARRIER barrier{};  // barrier変数の再利用
@@ -82,7 +82,7 @@ void DirectXCommon::PostDraw()
 	assert(fenceEvent != nullptr);
 
 	//バックバッファの番号取得
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	//backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
 	//今回はRenderTargetからPresentにする
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
