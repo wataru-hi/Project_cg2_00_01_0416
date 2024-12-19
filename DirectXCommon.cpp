@@ -44,14 +44,14 @@ void DirectXCommon::PreDraw()
 {
 	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-
+	D3D12_RESOURCE_BARRIER barrier = {};
 	//今回のバリアはTransition
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	//noneにしておく
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	//バリアを張る対象のリソース。現在のバックバッファに対して行う
 	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	//偏移前(現在)のResourceState
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 
@@ -87,10 +87,13 @@ void DirectXCommon::PostDraw()
 	assert(fenceEvent != nullptr);
 
 	//バックバッファの番号取得
-	//backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	//画面に描く処理はすべて終わり、画面に移すので、状態を遷移
-	//今回はRenderTargetからPresentにする
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get(); // .Get() を追加
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES; // サブリソースを指定
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	//TransitionBarrierを張る
