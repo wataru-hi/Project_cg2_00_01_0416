@@ -22,6 +22,8 @@
 #include"DirectXCommon.h"
 #include"WinApp.h"
 
+#include "SpriteCommon.h"
+
 #include "Logger.h"
 using namespace Logger;
 
@@ -241,6 +243,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	input = new Input();
 	input->Initialize(winApp);
 
+	SpriteCommon* spriteCommon = nullptr;
+	spriteCommon= new SpriteCommon();
+	spriteCommon->Initialize(dxCommon);
+	dxCommon = spriteCommon->GetDxommon();
+
 	//FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
@@ -253,6 +260,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	//比較関数はLessEqual,つまり近ければ描画がされます
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+#pragma region SpriteCommonクラスに書き込み(CreateRootSignature)
 
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;//0から始まる
@@ -311,6 +320,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		signatureBlod->GetBufferPointer(), signatureBlod->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(hr));
+
+#pragma endregion
+
+#pragma region SpriteCommonクラスに書き込み済み(CreateGraphicsPipelineState)
 
 	D3D12_INPUT_ELEMENT_DESC inputElementDesc[3] = {};
 	inputElementDesc[0].SemanticName = "POSITION";
@@ -375,6 +388,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
+#pragma endregion
 
 	//int vertexCount = 1536;
 
@@ -818,15 +833,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		dxCommon->PreDraw();
 
-		
+		spriteCommon->CommonDrawingProcess();
+		dxCommon = spriteCommon->GetDxommon();
 		//RootSignatureを設定。PS0に設定しているけど別途設定が必要
-		dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-		dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());//PS0を設定
+		//dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());//(SpriteCommonクラスのCommonDrawingProcessへ)
+		//dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());//PS0を設定//(SpriteCommonクラスのCommonDrawingProcessへ)
 		dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
 		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 		//形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い
-		dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);//(SpriteCommonクラスのCommonDrawingProcessへ)
 
 		//マテリアルｃBufferの設定
 		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());

@@ -1,6 +1,7 @@
 #include "FixFPS.h"
 
 #include<Windows.h>
+#include <thread> // 追加
 #pragma comment(lib, "winmm.lib")
 void FixFPS::InitialezeFixFPS()
 {

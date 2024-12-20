@@ -21,6 +21,11 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
+DirectXCommon::DirectXCommon()
+{
+	fixFPS_ = new FixFPS();
+}
+
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	fixFPS_->InitialezeFixFPS();

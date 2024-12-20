@@ -18,6 +18,8 @@
 class DirectXCommon
 {
 public:
+	DirectXCommon();
+
 	void Initialize(WinApp* winApp); // DirectXの初期化処理全体
 
 	void PreDraw();
