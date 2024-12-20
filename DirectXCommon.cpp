@@ -63,7 +63,9 @@ void DirectXCommon::PreDraw()
 
 	// 描画先のRTVとDSVを設定する
 	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();  // rtvHandle を正しく取得
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    rtvHandle.ptr += backBufferIndex * descripotrSizeRTV; // バックバッファインデックスに基づいてハンドルを調整
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f }; //青っぽい色	RGBAの順
@@ -81,8 +83,6 @@ void DirectXCommon::PreDraw()
 
 void DirectXCommon::PostDraw()
 {
-	HRESULT hr;
-
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 
@@ -100,7 +100,7 @@ void DirectXCommon::PostDraw()
 	commandList->ResourceBarrier(1, &barrier);
 
 	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCloseすること
-	hr = commandList->Close();
+	 hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
 	//GPUにコマンドリストの実行を行わせる
@@ -144,7 +144,7 @@ void DirectXCommon::DeviceInitialize()
 
 	//HRESULはWindows系のエラーコードあり
 	//関数が成功したかどうかをSUCCEEDEマクロで判定できる
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	//曽木課の根本な部分でエラーが出た場合が多いのでassertにしておく
 	assert(SUCCEEDED(hr));
 
@@ -222,7 +222,7 @@ void DirectXCommon::DeviceInitialize()
 
 void DirectXCommon::CreateCommand()
 {
-	HRESULT hr;
+	
 
 	//コマンドキューを生成する
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
@@ -243,7 +243,7 @@ void DirectXCommon::CreateCommand()
 
 void DirectXCommon::CreateSwapChain()
 {
-	HRESULT hr;
+	hr;
 
 	swapChainDesc.Width = winApp_->kClientWidth;//画面の幅と高さをクライアントと同じにする
 	swapChainDesc.Height = winApp_->kClientHeight;
@@ -279,7 +279,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthBuffer()
 	depthClearValue.DepthStencil.Depth = 1.0f; // 1.0f (最大値) でクリア
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // フォーマット。Resourceと合わせる
 
-	HRESULT hr = device->CreateCommittedResource(
+	hr = device->CreateCommittedResource(
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
 		&resourceDesc, // Resourceの設定
@@ -315,15 +315,13 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::createDescriptorHeap
 	descriptorHeapDesc.Type = heapType;
 	descriptorHeapDesc.NumDescriptors = numDescriptors;
 	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+	hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
 }
 
 void DirectXCommon::CreateRenderTargetView()
 {
-	HRESULT hr;
-
 	// SwapChainからResourceを引っ張ってくる
 	for (int i = 0; i < 2; i++) {
 		hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&swapChainResources[i]));
@@ -403,7 +401,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D
 
 	//Resouceの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> resouce = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
+	hr = device->CreateCommittedResource(
 		&heapProperties,//Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定
 		&resourceDesc,//Resourceの設定
@@ -424,7 +422,7 @@ void DirectXCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::Sc
 		//MipMaplevelを指定して各Imageを取得
 		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
 		//Textureに転送
-		HRESULT hr = texture->WriteToSubresource(
+		 hr = texture->WriteToSubresource(
 			UINT(mipLevel),
 			nullptr,//全領域へのコピー
 			img->pixels,//元データアクセス
@@ -467,7 +465,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 	Log(ConvertString(std::format(L"begin Compiler, path:{}, profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
 	IDxcBlobEncoding* shaderSource = nullptr;
-	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	 hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	//読まれなかったら止める
 	assert(SUCCEEDED(hr));
 	//読み込んだファイル内容を設定する
@@ -516,7 +514,6 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 {
-	HRESULT hr;
 
 	// 頂点リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
@@ -567,8 +564,6 @@ void DirectXCommon::InitializeDepthView()
 
 void DirectXCommon::CreateFance()
 {
-	HRESULT hr;
-
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 }
@@ -594,7 +589,6 @@ void DirectXCommon::ScissorPort()
 
 void DirectXCommon::CreateDXCCompiler()
 {
-	HRESULT hr;
 
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
 	assert(SUCCEEDED(hr));

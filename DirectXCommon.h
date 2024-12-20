@@ -86,6 +86,8 @@ public:
 private:
 	WinApp* winApp_ = nullptr;
 
+	HRESULT hr;
+
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//DXGIファクトリーの生成
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
