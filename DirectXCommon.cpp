@@ -123,6 +123,15 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
+	// コマンドの実行完了を待つ
+    /*commandQueue->Signal(fence.Get(), ++fenceValue);
+    if (fence->GetCompletedValue() != fenceValue) {
+        HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+        fence->SetEventOnCompletion(fenceValue, event);
+        WaitForSingleObject(event, INFINITE);
+        CloseHandle(event);
+    }*/
+
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
@@ -290,7 +299,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthBuffer()
 
 	assert(SUCCEEDED(hr));
 
-	return resource;
+	return resource.Get();
 }
 
 void DirectXCommon::CreatVariousDescriptorHeaps()
