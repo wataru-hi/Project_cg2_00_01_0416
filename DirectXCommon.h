@@ -141,7 +141,7 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
 
 	//TranssitionBarrier
-	D3D12_RESOURCE_BARRIER barrier{};
+	//D3D12_RESOURCE_BARRIER barrier{};
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
 	UINT backBufferIndex;
