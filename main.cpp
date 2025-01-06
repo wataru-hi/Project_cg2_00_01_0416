@@ -10,8 +10,10 @@
 #include <dxgidebug.h>
 
 #include <dxcapi.h>
-#include "Mymath.h"
-using namespace mymath;
+//#include "Mymath.h"
+
+#include "Transform.h"
+
 #include "externals/DirectXTex/DirectXTex.h"
 #include <cmath>
 
@@ -200,7 +202,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	Sprite* sprite = nullptr;
 	sprite = new Sprite();
-	sprite->Initialize();
+	sprite->Initialize(spriteCommon,dxCommon);
 
 	//FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -553,36 +555,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	sprite->Update(winApp);
 
-	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1; indexDataSprite[4] = 4; indexDataSprite[5] = 2;
-
-	VertexData hidariSita;
-	hidariSita.position = { 0.0f, 360.0f, 0.0f, 1.0f };
-	hidariSita.texcoord = { 0.0f, 1.0f };
-	hidariSita.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData hidariue;
-	hidariue.position = { 0.0f, 0.0f, 0.0f, 1.0f };
-	hidariue.texcoord = { 0.0f, 0.0f };
-	hidariue.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData migiUe;
-	migiUe.position = { 640.0f, 0.0f, 0.0f, 1.0f };
-	migiUe.texcoord = { 1.0f, 0.0f };
-	migiUe.normal = { 0.0f, 0.0f, -1.0f };
-
-	VertexData migiSita;
-	migiSita.position = { 640.0f, 360.0f, 0.0f, 1.0f };
-	migiSita.texcoord = { 1.0f, 1.0f };
-	migiSita.normal = { 0.0f, 0.0f, -1.0f };
-
-	/*vertexDataSprite[0] = hidariSita;
-	vertexDataSprite[1] = hidariue;
-	vertexDataSprite[2] = migiSita;
-
-	vertexDataSprite[3] = hidariue;
-	vertexDataSprite[4] = migiUe;
-	vertexDataSprite[5] = migiSita;*/
+	
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(sizeof(DirectrionaLight));
 
@@ -784,14 +757,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRoatateZMatix(uvTransformSprite.rotate.z));
 		uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-		materialDateSprite->uvTransform = uvTransformMatrix;
+		//materialDateSprite->uvTransform = uvTransformMatrix;
 
 		//ImGuiの内部コマンドを生成する
 		ImGui::Render();
 
 		dxCommon->PreDraw();
 
-		spriteCommon->CommonDrawingProcess();
+		spriteCommon->PreDraw();
 		dxCommon = spriteCommon->GetDxommon();
 		//RootSignatureを設定。PS0に設定しているけど別途設定が必要
 		//dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());//(SpriteCommonクラスのCommonDrawingProcessへ)
@@ -820,14 +793,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//dxCommon->GetCommandList()->DrawInstanced(vertexCount, 1, 0, 0);
 		dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-		dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
-		dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//VBVを設定0400
-
-		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);//0501
-
-		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());//0400
-		dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		spriteCommon->PreDraw();
+		sprite->Draw(textureSrvHandleGPU);
 
 		//実際のdxCommon->GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());

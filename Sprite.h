@@ -2,10 +2,14 @@
 
 #include <Windows.h>
 #include <d3d12.h>
+#include <cstdint>
 #include <wrl.h>
 
 #include "Mymath.h"
 using namespace mymath;
+
+
+#include "Transform.h"
 
 class DirectXCommon;
 class SpriteCommon;
@@ -16,7 +20,7 @@ class Sprite
 public:
 	void Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon);
 	void Update(WinApp* winApp);
-	void draw(DirectXCommon* dxCommon, D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle);
+	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle);
 
 	const Vector2& GetPosition() const { return position; }
 	void SetPosition(const Vector2& position) {this->position = position; }
@@ -45,6 +49,7 @@ private:
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionmatrix;
 
+	void CreateResources();
 	void CreateVertexBufferView();
 	void CreateIndexBufferView();
 	void CreateMaterialResources();

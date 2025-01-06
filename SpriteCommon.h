@@ -11,7 +11,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon);
 
 	//共通描画処理
-	void CommonDrawingProcess();
+	void PreDraw();
 
 	DirectXCommon* GetDxommon() const { return dxCommon_;}
 private:

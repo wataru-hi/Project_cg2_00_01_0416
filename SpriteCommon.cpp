@@ -11,16 +11,19 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	CreateGraphicsPipelineState();
 }
 
-void SpriteCommon::CommonDrawingProcess()
+void SpriteCommon::PreDraw()
 {
+	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
+
 	//RootSignatureを設定
-	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());//PS0を設定
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->SetPipelineState(graphicsPipelineState.Get());//PS0を設定
 
 	//形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 }
+
 
 void SpriteCommon::CreateRootSignature()
 {
