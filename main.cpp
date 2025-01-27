@@ -24,6 +24,7 @@
 
 #include"DirectXCommon.h"
 #include"WinApp.h"
+#include "TextureManager.h"
 
 #include "SpriteCommon.h"
 #include "Sprite.h"
@@ -189,7 +190,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-	
 
 	Input* input = nullptr;
 	input = new Input();
@@ -569,7 +569,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
 	dxCommon->UploadTextureData(textureResource.Get(), mipImages);
 
 	//metaDataを基にSRVの設定
@@ -586,7 +586,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture("Resources/monsterBall.png");
 	const DirectX::TexMetadata metadata2 = mipImages2.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata2);
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource(metadata2);
 	dxCommon->UploadTextureData(textureResource2.Get(), mipImages2);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
@@ -817,6 +817,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	delete sprite;
 	delete spriteCommon;
 	delete input;
+	TextureManager::GetInstance()->Finalize();
     delete dxCommon;
 	winApp->Finalize();
 	delete winApp;

@@ -18,7 +18,7 @@ class WinApp;
 class Sprite
 {
 public:
-	void Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon);
+	void Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon, std::string textureFilePath);
 	void Update(WinApp* winApp);
 	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle);
 
@@ -50,6 +50,8 @@ private:
 
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionmatrix;
+
+	uint32_t textureIndex = 0;
 
 	void CreateResources();
 	void CreateVertexBufferView();

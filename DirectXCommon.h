@@ -49,6 +49,8 @@ public:
 	/// SRVの指定番号のCPUデスクリプタハンドルを取得する
 	/// </summary>
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index); // SRVのCPUデスクリプタハンドルを取得
+	//最大テクスチャ枚数
+	static const uint32_t kMaxSRVConst;
 
 	/// <summary>
 	/// SRVの指定番号のGPUデスクリプタハンドルを取得する
@@ -59,7 +61,7 @@ public:
 /// テクスチャリソースの生成
 /// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(
-		ID3D12Device* device, const DirectX::TexMetadata& metadata);
+		const DirectX::TexMetadata& metadata);
 
 	/// <summary>
 	/// テクスチャデータの転送

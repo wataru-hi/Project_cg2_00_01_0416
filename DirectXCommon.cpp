@@ -21,6 +21,8 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
+const uint32_t DirectXCommon::kMaxSRVConst = 512;
+
 DirectXCommon::DirectXCommon()
 {
 	fixFPS_ = new FixFPS();
@@ -319,7 +321,7 @@ void DirectXCommon::CreatVariousDescriptorHeaps()
 
 	//ディスクリプターヒープの生成
 	rtvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	srvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVConst, true);
 	dsvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 }
 
@@ -377,9 +379,9 @@ void DirectXCommon::CreateRenderTargetView()
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
 {
-	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	handleCPU.ptr += (descriptorSize * index);
-	return handleCPU;
+	 D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    handle.ptr += index * descripotrSizeSRV;
+    return handle;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
@@ -399,7 +401,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descripotrSizeSRV, index);
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
 {
 	//matadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
