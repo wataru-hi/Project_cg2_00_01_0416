@@ -814,7 +814,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	OutputDebugStringA("Hello.DirectX!\n");
 
 	//解放処理
+	delete sprite;
+	delete spriteCommon;
 	delete input;
+    delete dxCommon;
 	winApp->Finalize();
 	delete winApp;
 

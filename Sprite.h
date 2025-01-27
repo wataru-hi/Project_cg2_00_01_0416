@@ -24,6 +24,8 @@ public:
 
 	const Vector2& GetPosition() const { return position; }
 	void SetPosition(const Vector2& position) {this->position = position; }
+
+	~Sprite();
 private:
 	SpriteCommon* spriteCommon_;
 	DirectXCommon* dxCommon_;

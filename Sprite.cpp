@@ -9,16 +9,13 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon)
 	spriteCommon_ = spriteCommon;
 	dxCommon_ = dxCommon;
 
-	CreateResources();
-
 	CreateVertexBufferView();
 	CreateIndexBufferView();
 	CreateMaterialResources();
 	CreateTransformMatirxResources();
 
-	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
+	CreateResources();
+
 }
 
 void Sprite::Update(WinApp* winApp)
@@ -48,6 +45,26 @@ void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle)
 
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
+}
+
+Sprite::~Sprite()
+{
+	if (vertexResource) {
+        vertexResource->Unmap(0, nullptr);
+        vertexResource->Release();
+    }
+    if (indexResource) {
+        indexResource->Unmap(0, nullptr);
+        indexResource->Release();
+    }
+    if (materialResource) {
+        materialResource->Unmap(0, nullptr);
+        materialResource->Release();
+    }
+    if (transformationMatrixResource) {
+        transformationMatrixResource->Unmap(0, nullptr);
+        transformationMatrixResource->Release();
+    }
 }
 
 void Sprite::CreateResources()
@@ -84,37 +101,48 @@ void Sprite::CreateResources()
 	vertexDate[4] = migiUe;
 	vertexDate[5] = migiSita;
 
-	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexDate));
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
 }
 
 void Sprite::CreateVertexBufferView()
 {
-	vertexBufferVier.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	vertexResource =spriteCommon_->GetDxommon()->CreateBufferResource(sizeof(VertexData) * 6);
 
+	vertexBufferVier.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	vertexBufferVier.SizeInBytes = sizeof(VertexData) * 6; // vertexCountは頂点数
 	vertexBufferVier.StrideInBytes = sizeof(VertexData);
+
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
 }
 
 void Sprite::CreateIndexBufferView()
 {
-	indexBufferVier.BufferLocation = indexResource->GetGPUVirtualAddress();
+	indexResource = spriteCommon_->GetDxommon()->CreateBufferResource(sizeof(uint32_t) * 6);
 
+	indexBufferVier.BufferLocation = indexResource->GetGPUVirtualAddress();
 	indexBufferVier.SizeInBytes = sizeof(uint32_t) * 6;
 	indexBufferVier.Format = DXGI_FORMAT_R32_UINT;
+
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexDate));
 }
 
 void Sprite::CreateMaterialResources()
 {
 	materialResource = dxCommon_->CreateBufferResource(sizeof(Material));
 
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDate->enableLighting = false;
 	materialDate->uvTransform = MakeIdentity4x4();
+
 }
 
 void Sprite::CreateTransformMatirxResources()
 {
+	transformationMatrixResource = dxCommon_->CreateBufferResource(sizeof(TransformationMatrix));
+
+	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
+
 	//単位行列を書き込んでおく
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
