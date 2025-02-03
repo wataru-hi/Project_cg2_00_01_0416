@@ -41,7 +41,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 	assert(textureDatas.size() + kSRVIndexTop < DirectXCommon::kMaxSRVConst);
 
-	DirectX::ScratchImage Image{};
+	DirectX::ScratchImage Image = dxCommon_->LoadTexture(filePath);
 #pragma region テクスチャデータを読んでプログラムで扱えるようにする
 	textureDatas.resize(textureDatas.size() + 1);//テクスチャデータを追加
 	TextureData& textureDate = textureDatas.back();//追加したデータの参照を取得する

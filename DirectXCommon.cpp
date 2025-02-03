@@ -403,6 +403,16 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
 {
+	  std::stringstream ss;
+    ss << "metaData.width: " << metadata.width
+       << ", metaData.height: " << metadata.height
+       << ", metaData.mipLevels: " << metadata.mipLevels
+       << ", metaData.arraySize: " << metadata.arraySize
+       << ", metaData.format: " << metadata.format
+       << ", metaData.dimension: " << metadata.dimension;
+    Log(ss.str());
+
+
 	//matadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);//Textureの幅

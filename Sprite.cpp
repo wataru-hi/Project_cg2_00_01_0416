@@ -16,7 +16,6 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon, std
 	CreateTransformMatirxResources();
 
 	CreateResources();
-
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 }
 
@@ -27,7 +26,7 @@ void Sprite::Update(WinApp* winApp)
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexDate));
 
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	transform = { {size.x, size.y, 1.0f}, {0.0f, 0.0f, rotation}, {position.x, position.y, 0.0f} };
 	worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
 	Matrix4x4 projectionMatrix = makeOrthogphicMatrix(0.0f, 0.0f, float(winApp_->kClientWidth), float(winApp_->kClientHeight), 0.1f, 100.0f);
@@ -35,7 +34,7 @@ void Sprite::Update(WinApp* winApp)
 	transformationMatrixData->World = worldMatrix;
 }
 
-void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle)
+void Sprite::Draw()
 {
 	ID3D12GraphicsCommandList* commandList = spriteCommon_->GetDxommon()->GetCommandList();
 
@@ -43,7 +42,7 @@ void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle)
 	commandList->IASetIndexBuffer(&indexBufferVier);
 
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
 
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
@@ -78,7 +77,7 @@ void Sprite::CreateResources()
 	indexDate[3] = 1; indexDate[4] = 4; indexDate[5] = 2;
 
 	VertexData hidariSita;
-	hidariSita.position = { 0.0f, 360.0f, 0.0f, 1.0f };
+	hidariSita.position = { 0.0f, 1.0f, 0.0f, 1.0f };
 	hidariSita.texcoord = { 0.0f, 1.0f };
 	hidariSita.normal = { 0.0f, 0.0f, -1.0f };
 
@@ -88,12 +87,12 @@ void Sprite::CreateResources()
 	hidariue.normal = { 0.0f, 0.0f, -1.0f };
 
 	VertexData migiUe;
-	migiUe.position = { 640.0f, 0.0f, 0.0f, 1.0f };
+	migiUe.position = { 1.0f, 0.0f, 0.0f, 1.0f };
 	migiUe.texcoord = { 1.0f, 0.0f };
 	migiUe.normal = { 0.0f, 0.0f, -1.0f };
 
 	VertexData migiSita;
-	migiSita.position = { 640.0f, 360.0f, 0.0f, 1.0f };
+	migiSita.position = { 1.0f, 1.0f, 0.0f, 1.0f };
 	migiSita.texcoord = { 1.0f, 1.0f };
 	migiSita.normal = { 0.0f, 0.0f, -1.0f };
 

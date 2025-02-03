@@ -20,10 +20,19 @@ class Sprite
 public:
 	void Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon, std::string textureFilePath);
 	void Update(WinApp* winApp);
-	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle);
+	void Draw();
 
+	const Vector2& GetSize() const { return size; }
+    void SetSize(const Vector2& size) { this->size = size; }
+
+	const float& GetRotation() const { return rotation; }
+	void SetRotation(const float& rotation) {this->rotation = rotation; }
+	
 	const Vector2& GetPosition() const { return position; }
 	void SetPosition(const Vector2& position) {this->position = position; }
+	
+	const Vector4& GetColor() const { return materialDate->color; }
+	void SetColor(const Vector4& color) { materialDate->color = color; }
 
 	~Sprite();
 private:
@@ -46,6 +55,8 @@ private:
 	D3D12_INDEX_BUFFER_VIEW indexBufferVier;
 
 	Transform transform;
+	Vector2 size = {640.0f, 360.0f};
+	float rotation = 0.0f;
 	Vector2 position = {0.0f, 0.0f};
 
 	Matrix4x4 worldMatrix;
