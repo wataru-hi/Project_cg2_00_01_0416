@@ -23,6 +23,8 @@ using namespace StringUtility;
 
 void DirectXCommon::Initialize(WinApp* winApp)
 {
+	fixFPS_->InitialezeFixFPS();
+
 	assert(winApp);
 	winApp_ = winApp;
 
@@ -124,13 +126,15 @@ void DirectXCommon::PostDraw()
 	}
 
 	// コマンドの実行完了を待つ
-    /*commandQueue->Signal(fence.Get(), ++fenceValue);
+    commandQueue->Signal(fence.Get(), ++fenceValue);
     if (fence->GetCompletedValue() != fenceValue) {
         HANDLE event = CreateEvent(nullptr, false, false, nullptr);
         fence->SetEventOnCompletion(fenceValue, event);
         WaitForSingleObject(event, INFINITE);
         CloseHandle(event);
-    }*/
+    }
+
+	fixFPS_->UpdateFixFPS();
 
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
@@ -550,6 +554,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 	return VertexResource; // ComPtrのまま返す
 }
+
+
 
 void DirectXCommon::InitializeDepthView()
 {

@@ -10,6 +10,8 @@
 #include <memory> // 追加
 #include <cstdint> // 追加
 
+#include "FixFPS.h"
+
 #include "WinApp.h"
 
 
@@ -85,6 +87,7 @@ public:
 
 private:
 	WinApp* winApp_ = nullptr;
+	FixFPS* fixFPS_ = nullptr;
 
 	HRESULT hr;
 
