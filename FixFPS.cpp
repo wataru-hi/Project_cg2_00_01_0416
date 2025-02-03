@@ -1,6 +1,7 @@
 #include "FixFPS.h"
 
 #include<Windows.h>
+#include <thread>
 #pragma comment(lib, "winmm.lib")
 void FixFPS::InitialezeFixFPS()
 {
@@ -29,7 +30,7 @@ void FixFPS::UpdateFixFPS()
 		// 1/60秒経過するまで微小なスリープを繰り返す
 		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
 			// 1マイクロ秒スリープ
-			std::this_thread::sleep_for(std::chrono::microseconds(1));
+			//std::this_thread::sleep_for(std::chrono::microseconds(1));
 		}
 	}
 

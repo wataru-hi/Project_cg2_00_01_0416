@@ -23,6 +23,7 @@ using namespace StringUtility;
 
 void DirectXCommon::Initialize(WinApp* winApp)
 {
+	fixFPS_ = new FixFPS();
 	fixFPS_->InitialezeFixFPS();
 
 	assert(winApp);
