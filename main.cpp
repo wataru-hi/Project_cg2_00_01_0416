@@ -795,6 +795,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		spriteCommon->PreDraw();
 		dxCommon = spriteCommon->GetDxommon();
+		
+
+		/*spriteCommon->PreDraw();*/
 		//RootSignatureを設定。PS0に設定しているけど別途設定が必要
 		//dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());//(SpriteCommonクラスのCommonDrawingProcessへ)
 		//dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());//PS0を設定//(SpriteCommonクラスのCommonDrawingProcessへ)
@@ -817,12 +820,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-		DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture(modelData.material.textureFilepPath);
+		//DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture(modelData.material.textureFilepPath);
 
 		//dxCommon->GetCommandList()->DrawInstanced(vertexCount, 1, 0, 0);
 		dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-		spriteCommon->PreDraw();
 		for (std::shared_ptr<Sprite> sprite : spriteList)
 		{
 			sprite->Draw();

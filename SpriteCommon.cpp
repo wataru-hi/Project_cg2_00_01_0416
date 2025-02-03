@@ -8,6 +8,8 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
 
+	CreateRootSignature();
+
 	CreateGraphicsPipelineState();
 }
 
