@@ -46,7 +46,7 @@ void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle)
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
 
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	commandList->SetDescriptorHeaps(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
 	
 	commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
 }

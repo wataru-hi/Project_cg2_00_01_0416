@@ -380,7 +380,7 @@ void DirectXCommon::CreateRenderTargetView()
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
 {
 	 D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    handle.ptr += index * descripotrSizeSRV;
+	 handle.ptr += index * (descriptorSize * index);
     return handle;
 }
 
