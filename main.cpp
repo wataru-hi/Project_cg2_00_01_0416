@@ -1446,6 +1446,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//解放処理
 	delete input;
+	delete dxCommon;
 	winApp->Finalize();
 	delete winApp;
 
