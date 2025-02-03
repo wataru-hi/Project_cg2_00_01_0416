@@ -112,6 +112,8 @@ void DirectXCommon::PostDraw()
 	 hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
+	 Log("PostDraw: Command list closed successfully.");
+
 	//GPUにコマンドリストの実行を行わせる
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
 	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
