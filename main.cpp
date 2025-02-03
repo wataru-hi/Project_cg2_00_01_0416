@@ -751,8 +751,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//assert(SUCCEEDED(hr));
 
 	//FenceのSignalを待つためのイベントを作成する
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	assert(fenceEvent != nullptr);
+	/*HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	assert(fenceEvent != nullptr);*/
 
 	//DirectXCommonのDXCCompilerに移植
 	////dxcCompilerを初期化
@@ -1450,7 +1450,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	winApp->Finalize();
 	delete winApp;
 
-	CloseHandle(fenceEvent);
+	//CloseHandle(fenceEvent);
 
 
 	return 0;

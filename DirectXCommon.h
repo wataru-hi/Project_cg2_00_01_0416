@@ -18,6 +18,8 @@
 class DirectXCommon
 {
 public:
+	~DirectXCommon();
+
 	void Initialize(WinApp* winApp); // DirectXの初期化処理全体
 
 	void PreDraw();
@@ -88,6 +90,8 @@ public:
 private:
 	WinApp* winApp_ = nullptr;
 	FixFPS* fixFPS_ = nullptr;
+
+	HANDLE event;
 
 	HRESULT hr;
 

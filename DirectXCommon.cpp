@@ -21,6 +21,11 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
+DirectXCommon::~DirectXCommon()
+{
+	CloseHandle(event);
+}
+
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	fixFPS_ = new FixFPS();
@@ -129,10 +134,10 @@ void DirectXCommon::PostDraw()
 	// コマンドの実行完了を待つ
     commandQueue->Signal(fence.Get(), ++fenceValue);
     if (fence->GetCompletedValue() != fenceValue) {
-        HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+        event = CreateEvent(nullptr, false, false, nullptr);
         fence->SetEventOnCompletion(fenceValue, event);
-        WaitForSingleObject(event, INFINITE);
-        CloseHandle(event);
+        //WaitForSingleObject(event, INFINITE);
+        //CloseHandle(event);
     }
 
 	fixFPS_->UpdateFixFPS();
@@ -142,6 +147,8 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
+
+	
 }
 
 void DirectXCommon::DeviceInitialize()
