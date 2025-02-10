@@ -79,7 +79,9 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
-
+	// setter
+	void SetCompileVertexShader(const std::wstring& filePath, const wchar_t* profile);
+	void SetCompilePixcelShader(const std::wstring& filePath, const wchar_t* profile);
 
 	// getter
 	ID3D12Device* GetDevice() const { return device.Get(); }
@@ -154,6 +156,27 @@ private:
 	UINT backBufferIndex;
 	
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce; // 深度ステンシルリソース
+
+	//DepthStencilStateの設定
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+
+	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
+	
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+	
+	D3D12_BLEND_DESC blendDesc{};
+
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+
+	//shaderをコンパイルする
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
+
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
+
+
+	private:
 	//デバイスの初期化
 	void DeviceInitialize(); // D3D12デバイスを初期化する
 
@@ -172,6 +195,22 @@ private:
 
 	//深度ステンシルビューの初期化
 	void InitializeDepthView(); // 深度ステンシルビューを初期化する
+
+	void SetDepthStencilState();
+
+	void SetDescriptorRange();
+	
+	void CreateRootSignature();
+
+	void SetInputElementDesc();
+
+	void SetBlendState();
+
+	void SetRasterizerState();
+
+	void CreateGraphicsPipelineState();
+
+	
 
 	//フェンスの生成
 	void CreateFance(); // フェンスを生成する (同期用)
