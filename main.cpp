@@ -201,20 +201,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteCommon->Initialize(dxCommon);
 	dxCommon = spriteCommon->GetDxommon();
 
-	
-
-	//FenceのSignalを待つためのイベントを作成する
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	assert(fenceEvent != nullptr);
-
-	//DepthStencilStateの設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	//Depthの機能を有効化する
-	depthStencilDesc.DepthEnable = true;
-	//書き込みをする
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual,つまり近ければ描画がされます
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+#pragma region SpriteCommonクラスに書き込み
+	////DepthStencilStateの設定
+	//D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	////Depthの機能を有効化する
+	//depthStencilDesc.DepthEnable = true;
+	////書き込みをする
+	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	////比較関数はLessEqual,つまり近ければ描画がされます
+	//depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+#pragma endregion
 
 #pragma region SpriteCommonクラスに書き込み(CreateRootSignature)
 
@@ -346,6 +342,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma endregion
 
+#pragma region モデル情報
 	//int vertexCount = 1536;
 
 	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
@@ -513,8 +510,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	uint32_t modelSize = static_cast<uint32_t>(sizeof(VertexData) * modelData.vertices.size());
 	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
 	//vertexResource->Unmap(0, nullptr);
+#pragma endregion 
 
 
+#pragma region スプライト情報
 	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = dxCommon->CreateBufferResource(sizeof(VertexData) * 6);
 	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = dxCommon->CreateBufferResource(sizeof(uint32_t) * 6);
 
@@ -552,6 +551,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	////書き込むためのアドレスを取得
 	//vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
+#pragma endregion
 	
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(sizeof(DirectrionaLight));
