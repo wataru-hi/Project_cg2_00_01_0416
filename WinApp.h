@@ -10,6 +10,9 @@ public:
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM Lparam);
 	
 public:
+	~WinApp();
+
+
 	void Initialize();
 	void Finalize();
 

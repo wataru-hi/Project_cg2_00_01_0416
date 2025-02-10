@@ -24,6 +24,13 @@ using namespace StringUtility;
 DirectXCommon::~DirectXCommon()
 {
 	CloseHandle(event);
+
+	delete fixFPS_;
+
+	//ImGuiの終了処理
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void DirectXCommon::Initialize(WinApp* winApp)
