@@ -1448,6 +1448,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	delete input;
 	delete dxCommon;
 	winApp->Finalize();
+
 	delete winApp;
 
 	//CloseHandle(fenceEvent);
