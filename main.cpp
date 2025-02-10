@@ -835,8 +835,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-		DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture(modelData.material.textureFilepPath);
-
 		//dxCommon->GetCommandList()->DrawInstanced(vertexCount, 1, 0, 0);
 		dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
