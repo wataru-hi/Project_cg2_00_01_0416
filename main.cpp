@@ -512,7 +512,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//		indexData[3] = start + 1; indexData[4] = start + 2; indexData[5] = start + 5;
 	//	}
 	//}
-#pragma endregion
 
 	// モデルを読み込み
 	ModelData modelData = LoadObjFile("Resources/06_02", "axis.obj");
@@ -542,7 +541,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	uint32_t modelSize = static_cast<uint32_t>(sizeof(VertexData) * modelData.vertices.size());
 	std::memcpy(vertexData, modelData.vertices.data(), modelSize); // 頂点データをリソースにコピー
 	//vertexResource->Unmap(0, nullptr);
-
+#pragma endregion
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = dxCommon->CreateBufferResource(sizeof(VertexData) * 6);
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = dxCommon->CreateBufferResource(sizeof(uint32_t) * 6);
