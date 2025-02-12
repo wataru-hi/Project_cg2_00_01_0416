@@ -725,7 +725,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
 	directrionaLightData->intensity = 1.0f;
 
+
+	srand((int)time(NULL));
+
 	Call call = Result_Daice;
+
 
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true)//ゲームループ
