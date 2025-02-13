@@ -25,7 +25,7 @@ void Sprite::Update(WinApp* winApp)
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexDate));
 
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {position.x, position.y, 0.0f} };
 	worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
 	Matrix4x4 projectionMatrix = makeOrthogphicMatrix(0.0f, 0.0f, float(winApp_->kClientWidth), float(winApp_->kClientHeight), 0.1f, 100.0f);

@@ -653,6 +653,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
 	directrionaLightData->intensity = 1.0f;
 
+	Vector2 pos = sprite->GetPosition();
+	
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true)//ゲームループ
 	{
@@ -751,6 +753,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//Matrix4x4 worldViewProjectionmatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 		//transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 		//transfromationMatrixDataSprite->World = worldMatrixSprite;
+
+		pos.x += 0.1f;
+		pos.y += 0.1f;
+
+		sprite->SetPosition(pos);
 
 		sprite->Update(winApp);
 
