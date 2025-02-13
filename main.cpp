@@ -1262,17 +1262,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descripotrSizeSRV, 3);
 	device->CreateShaderResourceView(instacingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	Transform transforms[kNumInstance];
+	Particle particle[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-		transforms[index].scale = { 1.0f, 1.0f, 1.0f };
-		transforms[index].rotate = { 0.0f, 0.0f, 0.0f };
-		transforms[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+		particle[index].transform.scale = { 1.0f, 1.0f, 1.0f };
+		particle[index].transform.rotate = { 0.0f, 0.0f, 0.0f };
+		particle[index].transform.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+		particle[index].velocity = {0.0f, 1.0f, 0.0f}
 	}
 
-	for (uint32_t index = 0; index < kNumInstance; ++index)
-	{
-
-	}
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
