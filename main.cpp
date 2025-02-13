@@ -656,6 +656,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
 	directrionaLightData->intensity = 1.0f;
 	
+	Vector2 pos;
+
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true)//ゲームループ
 	{
@@ -754,9 +756,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//Matrix4x4 worldViewProjectionmatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 		//transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 		//transfromationMatrixDataSprite->World = worldMatrixSprite;
-
-
-		sprite->Update(winApp);
+		pos = { 0.0f, 0.0f};
+		for(Sprite* sprite : sprites)
+		{
+			sprite->SetPosition(pos);
+			pos.x += 20.0f;
+			sprite->Update(winApp);
+		}
 
 		Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRoatateZMatix(uvTransformSprite.rotate.z));
@@ -798,8 +804,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 		spriteCommon->PreDraw();
-		sprite->Draw(textureSrvHandleGPU);
-
+		for(Sprite* sprite : sprites)
+		{
+			sprite->Draw(textureSrvHandleGPU);
+		}
 		//実際のdxCommon->GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 
@@ -818,7 +826,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	OutputDebugStringA("Hello.DirectX!\n");
 
 	//解放処理
-	delete sprite;
 	delete spriteCommon;
 	delete input;
     delete dxCommon;
