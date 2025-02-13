@@ -24,6 +24,15 @@ public:
 
 	const Vector2& GetPosition() const { return position; }
 	void SetPosition(const Vector2& position) {this->position = position; }
+	
+	const float& GetRotate() const { return rotate; }
+	void SetRotate(const float& rotate) {this->rotate = rotate; }
+
+	const Vector4& GetColor() const {return color; }
+	void SetColor(const Vector4& color) { materialDate->color = color; }
+
+	const Vector2& GetSize() const { return size; }
+	void SetSize(const Vector2& size) {this->size = size; }
 
 	~Sprite();
 private:
@@ -47,6 +56,9 @@ private:
 
 	Transform transform;
 	Vector2 position = {0.0f, 0.0f};
+	float rotate = 0.0f;
+	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f};
+	Vector2 size = Vector2{ 1.0f, 1.0f};
 
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionmatrix;

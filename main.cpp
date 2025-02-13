@@ -200,10 +200,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteCommon->Initialize(dxCommon);
 	dxCommon = spriteCommon->GetDxommon();
 
-	Sprite* sprite = nullptr;
-	sprite = new Sprite();
-	sprite->Initialize(spriteCommon,dxCommon);
-
 	//FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
@@ -544,7 +540,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 
 	////頂点リソースにデータを書き込む
-	uint32_t* indexDataSprite = nullptr;
+	//uint32_t* indexDataSprite = nullptr;
 	////書き込むためのアドレスを取得
 	//indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
 
@@ -553,8 +549,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	////書き込むためのアドレスを取得
 	//vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
-	sprite->Update(winApp);
-
+	std::vector<Sprite*> sprites; 
+	for(uint32_t i = 0; i < 5; ++i)
+	{	
+		Sprite* sprite = new Sprite();
+		sprite->Initialize(spriteCommon,dxCommon);
+		sprites.push_back(sprite);
+		
+	}
+		
 	
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(sizeof(DirectrionaLight));
@@ -652,8 +655,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directrionaLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
 	directrionaLightData->intensity = 1.0f;
-
-	Vector2 pos = sprite->GetPosition();
 	
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true)//ゲームループ
@@ -754,10 +755,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 		//transfromationMatrixDataSprite->World = worldMatrixSprite;
 
-		pos.x += 0.1f;
-		pos.y += 0.1f;
-
-		sprite->SetPosition(pos);
 
 		sprite->Update(winApp);
 
