@@ -1121,6 +1121,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			directrionaLightData->intensity = LightIntensity;
 
+			directrionaLightData->direction = Normalize(directrionaLightData->direction);
+
 
 			Matrix4x4 worldMatrix = MakeAfineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAfineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1136,6 +1138,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Matrix4x4 worldViewProjectionmatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transfromationMatrixDataSprite->WVP = worldViewProjectionmatrixSprite;
 			transfromationMatrixDataSprite->World = worldMatrixSprite;
+
 
 			//// 4x4配列の要素を表示
 			//for (int row = 0; row < 4; ++row)
@@ -1278,6 +1281,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	OutputDebugStringA("Hello.DirectX!\n");
 
 	//解放処理
+
+	dxcUtils->Release(); // 追加
+dxcCompiler->Release(); // 追加
 	CloseHandle(fenceEvent);
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
@@ -1317,6 +1323,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #ifdef _DEBUG
 	debugContoroller->Release();
+#endif
+
+	#ifdef _DEBUG
+    debugContoroller->Release();
+    InfoQueue->Release(); // デバッグビルド以外でも解放
+    includeHandler->Release(); // デバッグビルド以外でも解放
 #endif
 	CloseWindow(hwnd);
 
