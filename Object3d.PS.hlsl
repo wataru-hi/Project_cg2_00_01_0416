@@ -39,8 +39,8 @@ PixcelShaderOutput main(VertexShaderOutput input)
     float NdotL = dot(normalize(input.normal), -gDirectrionaLight.direction); // 追加
 
     float RdotE = dot(reflectLight, toEye);
-    //float specularPow = pow(saturate(RdotE), gMaterial.shininess);
-    float specularPow = pow(saturate(RdotE), 70);
+    float specularPow = pow(saturate(RdotE), gMaterial.shininess);
+    //float specularPow = pow(saturate(RdotE), 70);
 
     if (gMaterial.enableLightng != 0)//Litingする場合
     {
