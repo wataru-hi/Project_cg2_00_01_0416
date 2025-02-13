@@ -4,6 +4,9 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <vector>
+
+class DirectXCommon;
+
 class TextureManager
 {
 private:
@@ -17,9 +20,17 @@ private:
 #pragma endregion
 
 public:
+	void Initialize(DirectXCommon* dxc);
+
 	static TextureManager* GetInstance();
 
 	void Finitialize();
+
+	/// <summary>
+	/// テクスチャファイルの読み込み
+	/// </summary>
+	/// <param name="filePath">テクスチャファイルのパス</param>
+	void LoadTexture(const std::string& filePath);
 
 private:
 	struct TextureData {
@@ -30,7 +41,9 @@ private:
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 	};
 
-	std::vector<TextureData> textureData;
+	DirectXCommon* dxCommon;
+
+	std::vector<TextureData> textureDatas;
 
 };
 

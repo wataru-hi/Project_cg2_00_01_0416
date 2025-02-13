@@ -27,6 +27,7 @@
 
 #include "SpriteCommon.h"
 #include "Sprite.h"
+#include "TextureManager.h"
 
 #include "Logger.h"
 using namespace Logger;
@@ -549,6 +550,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	////書き込むためのアドレスを取得
 	//vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
+	TextureManager::GetInstance()->Initialize(dxCommon);
+
 	std::vector<Sprite*> sprites; 
 	for(uint32_t i = 0; i < 5; ++i)
 	{	
@@ -824,6 +827,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	OutputDebugStringA("Hello.DirectX!\n");
 
 	//解放処理
+	TextureManager::GetInstance()->Finitialize();
 	delete spriteCommon;
 	delete input;
     delete dxCommon;

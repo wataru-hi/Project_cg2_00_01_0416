@@ -321,7 +321,7 @@ void DirectXCommon::CreatVariousDescriptorHeaps()
 
 	//ディスクリプターヒープの生成
 	rtvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	srvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVcount, true);
 	dsvDescriptorHeap = createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 }
 
@@ -453,30 +453,32 @@ void DirectXCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::Sc
 	}
 }
 
-DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
-{
-	//テクスチャファイルを選んでプログラムで扱えるようにする
-	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-
-	if (FAILED(hr)) {
-		Log("Failed to load image: " + std::to_string(hr));
-		return {};
-	}
-
-	//ミップマップの生成
-	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
-
-	if (FAILED(hr)) {
-		Log("GenerateMipMaps failed: " + std::to_string(hr));
-		throw std::runtime_error("GenerateMipMaps failed!");
-	}
-
-	//ミップマップ月のデータを返す
-	return mipImages;
-}
+#pragma region TextureManagerに移植済み(LoadTexture)
+//DirectX::ScratchImage LoadTexture(const std::string& filePath)
+//{
+//	//テクスチャファイルを選んでプログラムで扱えるようにする
+//	DirectX::ScratchImage image{};
+//	std::wstring filePathW = ConvertString(filePath);
+//	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+//
+//	if (FAILED(hr)) {
+//		Log("Failed to load image: " + std::to_string(hr));
+//		return {};
+//	}
+//
+//	//ミップマップの生成
+//	DirectX::ScratchImage mipImages{};
+//	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+//
+//	if (FAILED(hr)) {
+//		Log("GenerateMipMaps failed: " + std::to_string(hr));
+//		throw std::runtime_error("GenerateMipMaps failed!");
+//	}
+//
+//	//ミップマップ月のデータを返す
+//	return mipImages;
+//}
+#pragma endregion
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {

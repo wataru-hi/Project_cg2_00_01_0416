@@ -66,12 +66,14 @@ public:
 	/// </summary>
 	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
 
+#pragma region TextureManagerに移植済み(LoadTexture)
 	/// <summary>
 /// テクスチャファイルの読み込み
 /// </summary>
 /// <param name="filePath">テクスチャファイルのパス</param>
 /// <returns>画像データ</returns>
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	//static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+#pragma endregion
 
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 		const std::wstring& filePath, const wchar_t* profile
@@ -79,7 +81,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
-
+	static const uint32_t kMaxSRVcount;
 
 	// getter
 	ID3D12Device* GetDevice() const { return device.Get(); }
@@ -92,8 +94,6 @@ private:
 	FixFPS* fixFPS_ = nullptr;
 
 	HRESULT hr;
-
-	static const uint32_t kMaxSRVcount;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//DXGIファクトリーの生成
