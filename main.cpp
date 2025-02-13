@@ -759,8 +759,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		pos = { 0.0f, 0.0f};
 		for(Sprite* sprite : sprites)
 		{
-			sprite->SetPosition(pos);
-			pos.x += 20.0f;
 			sprite->Update(winApp);
 		}
 
