@@ -65,6 +65,7 @@ struct VertexData {
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
+	float shininess;
 };
 
 struct TransformationMatrix {
@@ -755,6 +756,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//今回は赤を書き込んでみる
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDate->enableLighting = true;
+	materialDate->shininess = 70;
 
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -912,7 +914,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directrionaLightData));
 
 	directrionaLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directrionaLightData->direction = { 0.0f, -1.0f, 0.0f };
+	directrionaLightData->direction = Normalize(directrionaLightData->direction);
 	directrionaLightData->intensity = 1.0f;
 
 	const uint32_t descripotrSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -927,6 +929,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// 書き込むためのアドレスを取得
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+	 cameraData->worldPosition = { 0.0f, 0.0f, -10.0f };
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");

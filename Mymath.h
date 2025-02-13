@@ -377,3 +377,11 @@ Matrix4x4 makeViewportMatrix(const float& left, const float& top, const float& w
 
 	return result;
 }
+
+Vector3 Normalize(const Vector3& v) {
+  float magnitude = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+  if (magnitude == 0.0f) {
+    return v; // 長さが0の場合は変更しない
+  }
+  return {v.x / magnitude, v.y / magnitude, v.z / magnitude};
+}
