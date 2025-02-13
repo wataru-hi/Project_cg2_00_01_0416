@@ -4,6 +4,7 @@ struct Material
 {
     float32_t4 color;
     int32_t enableLightng;
+    float32_t 
 };
 
 struct PixcelShaderOutput
@@ -27,6 +28,7 @@ PixcelShaderOutput main(VertexShaderOutput input)
 {   
     PixcelShaderOutput output;
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    float32_t3 toEye = normalize(gCamera.worldPosition - input.wotldPosition);
     
     if (gMaterial.enableLightng != 0)//Litingする場合
     {
