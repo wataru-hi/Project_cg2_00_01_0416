@@ -38,16 +38,16 @@ void Sprite::Draw()
 {
 	ID3D12GraphicsCommandList* commandList = spriteCommon_->GetDxommon()->GetCommandList();
 
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferVier);
-	commandList->IASetIndexBuffer(&indexBufferVier);
+	spriteCommon_->GetDxommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferVier);
+	spriteCommon_->GetDxommon()->GetCommandList()->IASetIndexBuffer(&indexBufferVier);
 
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	spriteCommon_->GetDxommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	spriteCommon_->GetDxommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
 
-	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	spriteCommon_->GetDxommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	spriteCommon_->GetDxommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
 	
-	commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
+	spriteCommon_->GetDxommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0,0);
 }
 
 Sprite::~Sprite()

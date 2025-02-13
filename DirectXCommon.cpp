@@ -92,69 +92,69 @@ void DirectXCommon::PreDraw()
 
 void DirectXCommon::PostDraw()
 {
-    HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    assert(fenceEvent != nullptr);
+	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	assert(fenceEvent != nullptr);
 
-    // バックバッファの番号取得
-    backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	// バックバッファの番号取得
+	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-    D3D12_RESOURCE_BARRIER barrier = {};
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-    // TransitionBarrierを張る
-    commandList->ResourceBarrier(1, &barrier);
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	// TransitionBarrierを張る
+	commandList->ResourceBarrier(1, &barrier);
 
-    // コマンドリストの内容を確定させる。すべてのコマンドを積んでからCloseする②と
-    hr = commandList->Close();
-    assert(SUCCEEDED(hr));
+	// コマンドリストの内容を確定させる。すべてのコマンドを積んでからCloseする②と
+	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
 
-    // GPUにコマンドリストの実行を行わせる
-    ID3D12CommandList* commandLists[] = { commandList.Get() };
-    commandQueue->ExecuteCommandLists(1, commandLists);
+	// GPUにコマンドリストの実行を行わせる
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists);
 
-    // GPUとOSに画面の交換を行うよう通知する
-    hr = swapChain->Present(1, 0);
-    assert(SUCCEEDED(hr));
+	// GPUとOSに画面の交換を行うよう通知する
+	hr = swapChain->Present(1, 0);
+	assert(SUCCEEDED(hr));
 
-    // Fenceの値を更新
-    fenceValue++;
-    // GPUが②②までたどり着いたとき、Fenceの値を代入するようにSignalを送る
-    hr = commandQueue->Signal(fence.Get(), fenceValue);
-    assert(SUCCEEDED(hr));
-    Log("aaa PostDraw: Command queue signaled successfully.");
+	// Fenceの値を更新
+	fenceValue++;
+	// GPUが②②までたどり着いたとき、Fenceの値を代入するようにSignalを送る
+	hr = commandQueue->Signal(fence.Get(), fenceValue);
+	assert(SUCCEEDED(hr));
+	Log("aaa PostDraw: Command queue signaled successfully.");
 
-    // Fenceの値が指定したSignal値にたどり着いているか確認する
-    if (fence->GetCompletedValue() < fenceValue)
-    {
-        // 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを指定する
-        hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
-        assert(SUCCEEDED(hr));
-        // イベントを待つ
-        WaitForSingleObject(fenceEvent, INFINITE);
-    }
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
+	if (fence->GetCompletedValue() < fenceValue)
+	{
+		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを指定する
+		hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		assert(SUCCEEDED(hr));
+		// イベントを待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
 
-    // コマンドの実行完了を待つ
-    hr = commandQueue->Signal(fence.Get(), ++fenceValue);
-    assert(SUCCEEDED(hr));
-    if (fence->GetCompletedValue() != fenceValue) {
-        HANDLE event = CreateEvent(nullptr, false, false, nullptr);
-        hr = fence->SetEventOnCompletion(fenceValue, event);
-        assert(SUCCEEDED(hr));
-        WaitForSingleObject(event, INFINITE);
-        CloseHandle(event);
-    }
+	// コマンドの実行完了を待つ
+	hr = commandQueue->Signal(fence.Get(), ++fenceValue);
+	assert(SUCCEEDED(hr));
+	if (fence->GetCompletedValue() != fenceValue) {
+		HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+		hr = fence->SetEventOnCompletion(fenceValue, event);
+		assert(SUCCEEDED(hr));
+		WaitForSingleObject(event, INFINITE);
+		CloseHandle(event);
+	}
 
-    fixFPS_->UpdateFixFPS();
+	fixFPS_->UpdateFixFPS();
 
-    // 次のフレーム用のコマンドリストを準備
-    hr = commandAllocator->Reset();
-    assert(SUCCEEDED(hr));
-    hr = commandList->Reset(commandAllocator.Get(), nullptr);
-    assert(SUCCEEDED(hr));
+	// 次のフレーム用のコマンドリストを準備
+	hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
+	assert(SUCCEEDED(hr));
 }
 
 
@@ -372,17 +372,6 @@ void DirectXCommon::CreateRenderTargetView()
 		// RTVを作成
 		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandle);
 	}
-
-#pragma region rtvの設定(旧)
-	////RTVのma
-	//D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	//rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//出力結果をSRGBに変換して書き込む
-	//rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;//２ｄテクスチャとして書き込む
-	////ディスクリプタの先頭を取得する
-	//D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	////RTVを２つ作るディスクリプタを２つ用意
-	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-#pragma endregion
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
