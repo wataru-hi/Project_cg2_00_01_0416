@@ -21,6 +21,8 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
+const uint32_t DirectXCommon::kMaxSRVcount = 512;
+
 DirectXCommon::DirectXCommon()
 {
 	fixFPS_ = new FixFPS();

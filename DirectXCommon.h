@@ -93,6 +93,8 @@ private:
 
 	HRESULT hr;
 
+	static const uint32_t kMaxSRVcount;
+
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//DXGIファクトリーの生成
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;

@@ -16,7 +16,7 @@ TextureManager* TextureManager::GetInstance()
 }
 
 void TextureManager::Finitialize()
-[
+{
 	delete instance;
 	instance I = nullptr;
 }
