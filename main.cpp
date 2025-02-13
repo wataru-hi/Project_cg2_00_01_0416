@@ -857,8 +857,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	winApp->Finalize();
 	delete winApp;
 
-	CloseHandle(fenceEvent);
-
+	
 
 	return 0;
 }
