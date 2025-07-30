@@ -556,7 +556,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	for(uint32_t i = 0; i < 5; ++i)
 	{	
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon,dxCommon);
+		sprite->Initialize(spriteCommon,dxCommon, "Resources/uvChecker.png");
 		sprites.push_back(sprite);
 		
 	}
@@ -573,7 +573,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	directrionaLightData->intensity = 1.0f;
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = dxCommon->UploadTextureData("Resources/uvChecker.png");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata);
 	dxCommon->UploadTextureData(textureResource.Get(), mipImages);
