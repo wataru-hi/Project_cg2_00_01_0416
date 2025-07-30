@@ -1,13 +1,15 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
+#include "TextureManager.h"
 
 #include "DirectXCommon.h"
 #include "WinApp.h"
 
-void Sprite::Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon)
+void Sprite::Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon, std::string texxtureFilePath)
 {
 	spriteCommon_ = spriteCommon;
 	dxCommon_ = dxCommon;
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexFilePath(texxtureFilePath);
 
 	CreateVertexBufferView();
 	CreateIndexBufferView();
@@ -41,7 +43,7 @@ void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle)
 	commandList->IASetIndexBuffer(&indexBufferVier);
 
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandelGpu(textureIndex));
 
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	commandList->DrawIndexedInstanced(6, 1, 0, 0,0);

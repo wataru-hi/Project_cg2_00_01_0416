@@ -32,6 +32,12 @@ public:
 	/// <param name="filePath">テクスチャファイルのパス</param>
 	void LoadTexture(const std::string& filePath);
 
+
+	uint32_t GetTextureIndexFilePath(const std::string& filePath);
+
+	//テクスチャ番号からGPUハンドルを取得
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandelGpu(uint32_t textureIndex);
+
 private:
 	struct TextureData {
 		std::string filePath;//画像のファイルパス
@@ -44,6 +50,10 @@ private:
 	DirectXCommon* dxCommon;
 
 	std::vector<TextureData> textureDatas;
+
+	//SRVインデックス開始番号
+	static uint32_t ksrvIndexTop;
+
 
 };
 
