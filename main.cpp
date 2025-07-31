@@ -796,8 +796,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-		DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture(modelData.material.textureFilepPath);
-
 		//dxCommon->GetCommandList()->DrawInstanced(vertexCount, 1, 0, 0);
 		dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
@@ -824,6 +822,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	OutputDebugStringA("Hello.DirectX!\n");
 
 	//解放処理
+	for (Sprite* sprite : sprites) {
+		delete sprite;
+	}
+	sprites.clear();
+
 	delete spriteCommon;
 	delete input;
     delete dxCommon;

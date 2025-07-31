@@ -459,7 +459,7 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 
 	if (FAILED(hr)) {
-		Log("Failed to load image: " + std::to_string(hr));
+		Log("Failed to load image: \n" + std::to_string(hr));
 		return {};
 	}
 
