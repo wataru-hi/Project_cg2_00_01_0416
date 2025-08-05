@@ -14,7 +14,6 @@
 
 #include "WinApp.h"
 
-
 class DirectXCommon
 {
 public:
@@ -25,6 +24,10 @@ public:
 	void PreDraw();
 
 	void PostDraw();
+
+	//最大SRV数(最大テクスチャ枚数)
+	static const uint32_t kMaxSRVCount;
+
 
 	//各種でスクリプターヒープの生成
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> createDescriptorHeap(
@@ -152,6 +155,7 @@ private:
 	UINT backBufferIndex;
 	
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResouce; // 深度ステンシルリソース
+	
 	//デバイスの初期化
 	void DeviceInitialize(); // D3D12デバイスを初期化する
 

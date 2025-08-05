@@ -27,6 +27,7 @@
 
 #include "SpriteCommon.h"
 #include "Sprite.h"
+#include "TextureManager.h"
 
 #include "Logger.h"
 using namespace Logger;
@@ -199,6 +200,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteCommon= new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 	dxCommon = spriteCommon->GetDxommon();
+
+	TextureManager::GetInstance()->Initialize();
 
 	//FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -826,6 +829,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		delete sprite;
 	}
 	sprites.clear();
+
+	TextureManager::GetInstance()->Finalize();
 
 	delete spriteCommon;
 	delete input;
