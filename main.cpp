@@ -186,8 +186,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	winApp = new WinApp();
 	winApp->Initialize();
 
-	DirectXCommon* dxCommon = nullptr;
-	dxCommon = new DirectXCommon();
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+	//dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
 	
@@ -198,8 +198,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	SpriteCommon* spriteCommon = nullptr;
 	spriteCommon= new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
-	dxCommon = spriteCommon->GetDxommon();
+	spriteCommon->Initialize();
 
 	TextureManager::GetInstance()->Initialize();
 
@@ -556,7 +555,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	for(uint32_t i = 0; i < 5; ++i)
 	{	
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon,dxCommon);
+		sprite->Initialize(spriteCommon);
 		sprites.push_back(sprite);
 		
 	}
@@ -834,7 +833,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	delete spriteCommon;
 	delete input;
-    delete dxCommon;
 	winApp->Finalize();
 	delete winApp;
 

@@ -3,12 +3,13 @@
 #include <d3d12.h>
 #include "externals/DirectXTex/DirectXTex.h" // 追加
 
+
 #include <string>
 #include <vector>
 
 #include <wrl/client.h>
 
-
+class DirectXCommon;
 
 class TextureManager
 {
@@ -46,5 +47,7 @@ private:
 
 	//テクスチャデータ
 	std::vector<TextureData> textureDatas;
+
+	DirectXCommon* dxCommon;
 };
 

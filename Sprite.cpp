@@ -4,10 +4,11 @@
 #include "DirectXCommon.h"
 #include "WinApp.h"
 
-void Sprite::Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon)
+void Sprite::Initialize(SpriteCommon* spriteCommon)
 {
 	spriteCommon_ = spriteCommon;
-	dxCommon_ = dxCommon;
+
+	dxCommon_ = DirectXCommon::GetInstance();
 
 	CreateVertexBufferView();
 	CreateIndexBufferView();

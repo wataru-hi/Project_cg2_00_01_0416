@@ -18,7 +18,7 @@ class WinApp;
 class Sprite
 {
 public:
-	void Initialize(SpriteCommon* spriteCommon, DirectXCommon* dxCommon);
+	void Initialize(SpriteCommon* spriteCommon);
 	void Update(WinApp* winApp);
 	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle);
 

@@ -8,7 +8,7 @@
 class SpriteCommon
 {
 public:
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize();
 
 	//共通描画処理
 	void PreDraw();
@@ -18,7 +18,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
-	DirectXCommon* dxCommon_ = nullptr;
+	DirectXCommon* dxCommon_;
 
 	// ルートシグネチャの作成
 	void CreateRootSignature();

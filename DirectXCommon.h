@@ -16,14 +16,29 @@
 
 class DirectXCommon
 {
+private:
+	static DirectXCommon* instance;
+	DirectXCommon() = default;
+	~DirectXCommon() = default;
+	DirectXCommon(const DirectXCommon&) = delete;
+	DirectXCommon& operator=(const DirectXCommon&) = delete;
+
+
 public:
-	DirectXCommon();
+	
 
 	void Initialize(WinApp* winApp); // DirectXの初期化処理全体
 
 	void PreDraw();
 
 	void PostDraw();
+
+	static DirectXCommon* GetInstance() {
+		if (!instance) {
+			instance = new DirectXCommon();
+		}
+		return instance;
+	}
 
 	//最大SRV数(最大テクスチャ枚数)
 	static const uint32_t kMaxSRVCount;

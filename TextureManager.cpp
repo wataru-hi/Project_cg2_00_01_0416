@@ -31,22 +31,22 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 	TextureData& textureData = textureDatas.back();
 
 	textureData.filePath = filePath;
-	textureData.metadata = 
+	textureData.metadata = ;
 
-	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	//std::wstring filePathW = ConvertString(filePath);
+	//HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 
-	if (FAILED(hr)) {
-		Log("Failed to load image: \n" + std::to_string(hr));
-		return {};
-	}
+	//if (FAILED(hr)) {
+	//	Log("Failed to load image: \n" + std::to_string(hr));
+	//	return {};
+	//}
 
-	//ミップマップの生成
-	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	////ミップマップの生成
+	//DirectX::ScratchImage mipImages{};
+	//hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
 
-	if (FAILED(hr)) {
-		Log("GenerateMipMaps failed: " + std::to_string(hr));
-		throw std::runtime_error("GenerateMipMaps failed!");
-	}
+	//if (FAILED(hr)) {
+	//	Log("GenerateMipMaps failed: " + std::to_string(hr));
+	//	throw std::runtime_error("GenerateMipMaps failed!");
+	//}
 }

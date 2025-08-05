@@ -4,9 +4,9 @@
 
 using namespace Logger;
 
-void SpriteCommon::Initialize(DirectXCommon* dxCommon)
+void SpriteCommon::Initialize()
 {
-	dxCommon_ = dxCommon;
+	dxCommon_ = DirectXCommon::GetInstance();
 
 	CreateGraphicsPipelineState();
 }

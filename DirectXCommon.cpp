@@ -21,15 +21,15 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
-const uint32_t DirectXCommon::kMaxSRVCount = 512;
+DirectXCommon* DirectXCommon::instance = nullptr;
 
-DirectXCommon::DirectXCommon()
-{
-	fixFPS_ = new FixFPS();
-}
+const uint32_t DirectXCommon::kMaxSRVCount = 512;
 
 void DirectXCommon::Initialize(WinApp* winApp)
 {
+
+	fixFPS_ = new FixFPS();
+
 	fixFPS_->InitialezeFixFPS();
 
 	assert(winApp);
