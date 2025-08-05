@@ -35,6 +35,9 @@ public:
 	/// <pram name="filePath">テクスチャファイルのパス</param>
 	void LoadTexture(const std::string& filePath);
 
+	// SRVインデックスの開始番号
+	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
+
 private:
 	// テクスチャ1枚分のデータ
 	struct TextureData {
@@ -45,9 +48,12 @@ private:
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 	};
 
+	DirectXCommon* dxCommon;
+
 	//テクスチャデータ
 	std::vector<TextureData> textureDatas;
 
-	DirectXCommon* dxCommon;
+	// SRVインデックスの開始番号
+	static uint32_t kSRVIndexTop;
 };
 
