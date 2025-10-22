@@ -60,15 +60,33 @@ void DirectXCommon::PreDraw()
 	//TransitionBarrierを張る
 	commandList->ResourceBarrier(1, &barrier);
 
+	//test
+	D3D12_CPU_DESCRIPTOR_HANDLE currentRtvHandle = GetCPUDescriptorHandle(
+		rtvDescriptorHeap,
+		descripotrSizeRTV,
+		backBufferIndex    // ここで現在のインデックスを使用
+	);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	// 描画先のRTVとDSVを設定する
-	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();  // rtvHandle を正しく取得
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+	// 【修正】currentRtvHandle を渡す
+	commandList->OMSetRenderTargets(1, &currentRtvHandle, false, &dsvHandle);
+
 	//指定した色で画面全体をクリアする
-	float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f }; //青っぽい色	RGBAの順
-	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f };
+	// 【修正】currentRtvHandle を渡す
+	commandList->ClearRenderTargetView(currentRtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	//// 描画先のRTVとDSVを設定する
+	////D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();  // rtvHandle を正しく取得
+	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+	////指定した色で画面全体をクリアする
+	//float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f }; //青っぽい色	RGBAの順
+	//commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	//描画用のDescriptorHeapの設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptoHeaps[] = { srvDescriptorHeap };
@@ -514,8 +532,6 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 {
-	hr;
-
 	// 頂点リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
 	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // uploadHeapを使う
