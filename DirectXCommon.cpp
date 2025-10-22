@@ -61,22 +61,22 @@ void DirectXCommon::PreDraw()
 	commandList->ResourceBarrier(1, &barrier);
 
 	//test
-	D3D12_CPU_DESCRIPTOR_HANDLE currentRtvHandle = GetCPUDescriptorHandle(
-		rtvDescriptorHeap,
-		descripotrSizeRTV,
-		backBufferIndex    // ここで現在のインデックスを使用
-	);
-
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//D3D12_CPU_DESCRIPTOR_HANDLE currentRtvHandle = GetCPUDescriptorHandle(
+	//	rtvDescriptorHeap,
+	//	descripotrSizeRTV,
+	//	backBufferIndex    // ここで現在のインデックスを使用
+	//);
 
 	// 描画先のRTVとDSVを設定する
-	// 【修正】currentRtvHandle を渡す
-	commandList->OMSetRenderTargets(1, &currentRtvHandle, false, &dsvHandle);
-
+	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();  // rtvHandle を正しく取得
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    rtvHandle.ptr += backBufferIndex * descripotrSizeRTV; // バックバッファインデックスに基づいてハンドルを調整
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f, 0.125f, 0.5f, 1.0f };
 	// 【修正】currentRtvHandle を渡す
-	commandList->ClearRenderTargetView(currentRtvHandle, clearColor, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	//// 描画先のRTVとDSVを設定する
@@ -99,8 +99,6 @@ void DirectXCommon::PreDraw()
 
 void DirectXCommon::PostDraw()
 {
-	
-
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 
@@ -118,7 +116,7 @@ void DirectXCommon::PostDraw()
 	commandList->ResourceBarrier(1, &barrier);
 
 	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCloseすること
-	hr = commandList->Close();
+	 hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
 	//GPUにコマンドリストの実行を行わせる
@@ -240,6 +238,7 @@ void DirectXCommon::DeviceInitialize()
 
 void DirectXCommon::CreateCommand()
 {
+	
 
 	//コマンドキューを生成する
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
@@ -260,6 +259,7 @@ void DirectXCommon::CreateCommand()
 
 void DirectXCommon::CreateSwapChain()
 {
+	hr;
 
 	swapChainDesc.Width = winApp_->kClientWidth;//画面の幅と高さをクライアントと同じにする
 	swapChainDesc.Height = winApp_->kClientHeight;
@@ -338,8 +338,6 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::createDescriptorHeap
 
 void DirectXCommon::CreateRenderTargetView()
 {
-	hr;
-
 	// SwapChainからResourceを引っ張ってくる
 	for (int i = 0; i < 2; i++) {
 		hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&swapChainResources[i]));
@@ -440,7 +438,7 @@ void DirectXCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::Sc
 		//MipMaplevelを指定して各Imageを取得
 		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
 		//Textureに転送
-		hr = texture->WriteToSubresource(
+		 hr = texture->WriteToSubresource(
 			UINT(mipLevel),
 			nullptr,//全領域へのコピー
 			img->pixels,//元データアクセス
@@ -483,7 +481,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 	Log(ConvertString(std::format(L"begin Compiler, path:{}, profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
 	IDxcBlobEncoding* shaderSource = nullptr;
-	hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	 hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	//読まれなかったら止める
 	assert(SUCCEEDED(hr));
 	//読み込んだファイル内容を設定する
@@ -581,8 +579,6 @@ void DirectXCommon::InitializeDepthView()
 
 void DirectXCommon::CreateFance()
 {
-	hr;
-
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 }
@@ -608,7 +604,6 @@ void DirectXCommon::ScissorPort()
 
 void DirectXCommon::CreateDXCCompiler()
 {
-	hr;
 
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
 	assert(SUCCEEDED(hr));
