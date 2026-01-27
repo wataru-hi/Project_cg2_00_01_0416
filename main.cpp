@@ -219,14 +219,35 @@ ID3D12DescriptorHeap* createDescriptorHeap(
 
 DirectX::ScratchImage LoadTexture(const std::string& filePath)
 {
+	std::wstring fileExt_ = ConvertString(filePath);
+	std::wstring filePathW = ConvertString(filePath);
+	HRESULT hr;
 	//テクスチャファイルを選んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	DirectX::TexMetadata metadata{};
+
+	// 区切り文字 '.' が出てくる一番最後の部分を検索
+	pos = filePathW.rfind('.');
+
+	// 検索がヒットしたら
+	if (pos != std::wstring::npos) {
+		// 区切り文字の後半をファイル拡張子として保存
+		fileExt_ = filePathW.substr(pos + 1, filePathW.size() - pos - 1);
+	}
+
+
+	if (fileExt_ == L"dds") {
+
+		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, image);
+	} else
+	{
+		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, &metadata, image);
+
+	}
 
 	//ミップマップの生成
 	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), metadata, DirectX::TEX_FILTER_SRGB, 0, mipImages);
 
 	//ミップマップ月のデータを返す
 	return mipImages;
@@ -670,7 +691,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexData[2].texcood = { 1.0f, 1.0f };
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("resources/mario.dds");
 	const DirectX::TexMetadata metadata = mipImages.GetMetadata();
 	ID3D12Resource* textureResource = CreateTextureResouce(device, metadata);
 	UploadTextureData(textureResource, mipImages);
